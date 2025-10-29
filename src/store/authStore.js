@@ -41,10 +41,24 @@ const useAuthStore = create((set) => ({
     }
   },
 
-  logout: () => {
-    set({ user: null, error: null });
-    localStorage.removeItem("token");
-    localStorage.removeItem("isAuthenticated");
+  logout: async (clearToken) => {
+    set({ loading: true });
+    try {
+      // Call logout API
+      await authApi.logout();
+    } catch (error) {
+      // Even if API fails, proceed with logout
+      console.error("Logout API error:", error);
+    } finally {
+      // Clear local state and storage
+      set({ user: null, error: null, loading: false });
+      if (clearToken) {
+        clearToken();
+      } else {
+        localStorage.removeItem("token");
+        localStorage.removeItem("isAuthenticated");
+      }
+    }
   },
 
   clearError: () => set({ error: null }),

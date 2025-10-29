@@ -8,6 +8,7 @@ import Login from "./components/Login";
 import DashboardLayout from "./components/DashboardLayout";
 import DashboardHome from "./pages/DashboardHome";
 import Courses from "./pages/Courses";
+import News from "./pages/News";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import "antd/dist/reset.css";
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
       {
         path: "courses",
         element: <Courses />,
+      },
+      {
+        path: "news",
+        element: <News />,
       },
     ],
   },

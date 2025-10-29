@@ -8,4 +8,9 @@ export const authApi = {
     });
     return response.data;
   },
+
+  logout: async () => {
+    const response = await axiosInstance.post("/api/logout");
+    return response.data;
+  },
 };

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { Layout, Menu, Avatar, Dropdown, Typography, Button } from "antd";
+import { toast } from "react-toastify";
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -10,7 +11,10 @@ import {
   LogoutOutlined,
   BellOutlined,
   BookOutlined,
+  FileTextOutlined,
 } from "@ant-design/icons";
+import useAuthStore from "../store/authStore";
+import { useAuthContext } from "../context/AuthContext";
 
 const { Header, Content, Sider } = Layout;
 const { Title } = Typography;
@@ -19,6 +23,8 @@ const DashboardLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useAuthStore();
+  const { clearToken } = useAuthContext();
 
   const menuItems = [
     {
@@ -32,6 +38,12 @@ const DashboardLayout = () => {
       icon: <BookOutlined />,
       label: "Courses",
       onClick: () => navigate("/dashboard/courses"),
+    },
+    {
+      key: "/dashboard/news",
+      icon: <FileTextOutlined />,
+      label: "News",
+      onClick: () => navigate("/dashboard/news"),
     },
     {
       key: "/dashboard/users",
@@ -66,9 +78,10 @@ const DashboardLayout = () => {
       icon: <LogoutOutlined />,
       label: "Logout",
       danger: true,
-      onClick: () => {
-        localStorage.removeItem("isAuthenticated");
-        window.location.href = "/";
+      onClick: async () => {
+        await logout(clearToken);
+        toast.success("Logged out successfully");
+        navigate("/", { replace: true });
       },
     },
   ];

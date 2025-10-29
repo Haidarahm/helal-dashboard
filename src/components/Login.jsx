@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Form, Input, Button } from "antd";
 import { toast } from "react-toastify";
@@ -14,6 +15,14 @@ const Login = () => {
   const navigate = useNavigate();
   const { setToken } = useAuthContext();
   const { login, loading, error } = useAuthStore();
+
+  // Redirect to dashboard if token exists in localStorage
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
 
   const onFinish = async (values) => {
     const result = await login(values.email, values.password, setToken);
