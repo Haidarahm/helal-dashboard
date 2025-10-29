@@ -1,1 +1,6 @@
 @import "tailwindcss";
+
+/* Fix Ant Design Header background */
+.ant-layout-header {
+  background: #ffffff !important;
+}

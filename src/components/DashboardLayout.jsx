@@ -79,15 +79,33 @@ const DashboardLayout = () => {
   return (
     <Layout className="min-h-screen bg-gray-50">
       {/* Navbar */}
-      <Header className="bg-white border-b border-gray-200 px-6 flex items-center justify-between sticky top-0 z-50 shadow-sm">
+      <Header
+        style={{
+          background: "#ffffff",
+          padding: "0 24px",
+          height: "64px",
+          lineHeight: "64px",
+          borderBottom: "1px solid #e5e7eb",
+          boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+        }}
+        className="flex items-center justify-between sticky top-0 z-50"
+      >
         <div className="flex items-center gap-4">
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             onClick={() => setCollapsed(!collapsed)}
             className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           />
-          <Title level={4} className="!mb-0 text-gray-800 font-semibold">
+          <Title
+            level={4}
+            className="!mb-0 text-gray-800 font-semibold !text-lg"
+          >
             Dashboard
           </Title>
         </div>
@@ -96,12 +114,18 @@ const DashboardLayout = () => {
             type="text"
             icon={<BellOutlined />}
             className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           />
           <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
             <Avatar
-              size="large"
+              size={40}
               icon={<UserOutlined />}
               className="cursor-pointer hover:ring-2 ring-blue-500 transition-all bg-gradient-to-br from-blue-500 to-indigo-600"
+              style={{ cursor: "pointer" }}
             />
           </Dropdown>
         </div>
@@ -124,20 +148,26 @@ const DashboardLayout = () => {
           collapsed={collapsed}
           collapsedWidth={0}
           theme="light"
-          className="shadow-lg border-l border-gray-200"
           style={{
             position: "fixed",
             right: 0,
             top: 64,
             bottom: 0,
             overflow: "auto",
+            background: "#ffffff",
+            boxShadow: "-2px 0 8px rgba(0, 0, 0, 0.1)",
+            borderLeft: "1px solid #e5e7eb",
           }}
         >
           <Menu
             mode="inline"
             selectedKeys={[selectedKey]}
             items={menuItems}
-            className="h-full border-r-0 pt-4"
+            style={{
+              borderRight: 0,
+              paddingTop: "16px",
+              height: "100%",
+            }}
           />
         </Sider>
       </Layout>
@@ -146,4 +176,3 @@ const DashboardLayout = () => {
 };
 
 export default DashboardLayout;
-
