@@ -1,36 +1,187 @@
 import { useEffect, useState } from "react";
-import { Typography, Card, Button, Pagination, Image, Empty, Spin } from "antd";
+import {
+  Typography,
+  Card,
+  Button,
+  Pagination,
+  Image,
+  Empty,
+  Spin,
+  Modal,
+  Form,
+  Input,
+  Upload,
+  Popconfirm,
+  Row,
+  Col,
+} from "antd";
 import {
   FileTextOutlined,
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 import useNewsStore from "../store/newsStore";
 import { toast } from "react-toastify";
 
 const { Title, Text } = Typography;
+const { TextArea } = Input;
 
 const News = () => {
-  const { news, loading, pagination, fetchNews, deleteNews } = useNewsStore();
+  const {
+    news,
+    loading,
+    pagination,
+    fetchNews,
+    deleteNews,
+    addNews,
+    updateNews,
+  } = useNewsStore();
   const [currentPage, setCurrentPage] = useState(1);
   const [language, setLanguage] = useState("en");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingNews, setEditingNews] = useState(null);
+  const [form] = Form.useForm();
+  const [fileList, setFileList] = useState([]);
 
   useEffect(() => {
-    fetchNews(language, currentPage, 10);
+    fetchNews(language, currentPage, 5);
   }, [currentPage, language]);
 
+  const handleAddNews = () => {
+    setEditingNews(null);
+    form.resetFields();
+    setFileList([]);
+    setIsModalOpen(true);
+  };
+
+  const handleEditNews = (item) => {
+    setEditingNews(item);
+    form.setFieldsValue({
+      title_en: item.title_en || "",
+      title_ar: item.title_ar || "",
+      subtitle_en: item.subtitle_en || "",
+      subtitle_ar: item.subtitle_ar || "",
+      description_en: item.description_en || "",
+      description_ar: item.description_ar || "",
+    });
+    setFileList([]);
+    setIsModalOpen(true);
+  };
+
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this news?")) {
-      const result = await deleteNews(id);
-      if (result.success) {
-        // News list will be refreshed automatically
-      }
+    const result = await deleteNews(id);
+    if (result.success) {
+      // News list will be refreshed automatically
     }
   };
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+    setEditingNews(null);
+    form.resetFields();
+    setFileList([]);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      // Validate form fields
+      const values = await form.validateFields();
+
+      // Validate images
+      if (fileList.length === 0) {
+        toast.error("Please upload at least one image");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("title_en", values.title_en);
+      formData.append("title_ar", values.title_ar);
+      formData.append("subtitle_en", values.subtitle_en);
+      formData.append("subtitle_ar", values.subtitle_ar);
+      formData.append("description_en", values.description_en);
+      formData.append("description_ar", values.description_ar);
+
+      // Append image files
+      fileList.forEach((file, index) => {
+        // Ant Design Upload: when beforeUpload returns false, file.originFileObj contains the File object
+        // In some cases, file might be the File object directly
+        let fileToAppend = null;
+
+        if (file.originFileObj) {
+          fileToAppend = file.originFileObj;
+        } else if (file instanceof File) {
+          fileToAppend = file;
+        } else if (file.uid && file.name) {
+          // If it's a file from Upload component but originFileObj is missing, try to get the file
+          fileToAppend = file;
+        }
+
+        if (fileToAppend instanceof File) {
+          formData.append("image[]", fileToAppend);
+          console.log(
+            `Image ${index + 1}:`,
+            fileToAppend.name,
+            fileToAppend.size
+          );
+        } else {
+          console.warn(`File ${index + 1} is not a valid File object:`, file);
+        }
+      });
+
+      // Debug: Log all FormData entries
+      console.log("FormData entries:");
+      for (let pair of formData.entries()) {
+        if (pair[1] instanceof File) {
+          console.log(`${pair[0]}:`, pair[1].name, `(${pair[1].size} bytes)`);
+        } else {
+          console.log(`${pair[0]}:`, pair[1]);
+        }
+      }
+
+      // Check if any images were added
+      const imageCount = Array.from(formData.entries()).filter(
+        (pair) => pair[0] === "image[]"
+      ).length;
+      console.log(`Total images to upload: ${imageCount}`);
+
+      if (imageCount === 0) {
+        toast.error("No valid images found. Please upload image files.");
+        return;
+      }
+
+      if (editingNews) {
+        const result = await updateNews(editingNews.id, formData);
+        if (result.success) {
+          handleCancel();
+        }
+      } else {
+        const result = await addNews(formData);
+        if (result.success) {
+          handleCancel();
+        }
+      }
+    } catch (error) {
+      console.error("Form validation failed:", error);
+      if (error.errorFields) {
+        toast.error("Please fill all required fields");
+      }
+    }
+  };
+
+  const handleUploadChange = ({ fileList: newFileList }) => {
+    // Update fileList state
+    setFileList(newFileList);
+    console.log("File list updated:", newFileList);
+  };
+
+  const beforeUpload = () => {
+    return false; // Prevent auto upload
   };
 
   return (
@@ -63,6 +214,7 @@ const News = () => {
             <Button
               type="primary"
               icon={<PlusOutlined />}
+              onClick={handleAddNews}
               className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 border-0"
             >
               Add News
@@ -89,18 +241,27 @@ const News = () => {
                       icon={<EditOutlined />}
                       key="edit"
                       className="text-blue-600"
+                      onClick={() => handleEditNews(item)}
                     >
                       Edit
                     </Button>,
-                    <Button
-                      type="text"
-                      icon={<DeleteOutlined />}
-                      key="delete"
-                      danger
-                      onClick={() => handleDelete(item.id)}
+                    <Popconfirm
+                      title="Delete News"
+                      description="Are you sure you want to delete this news item?"
+                      onConfirm={() => handleDelete(item.id)}
+                      okText="Yes"
+                      cancelText="No"
+                      okButtonProps={{ danger: true }}
                     >
-                      Delete
-                    </Button>,
+                      <Button
+                        type="text"
+                        icon={<DeleteOutlined />}
+                        key="delete"
+                        danger
+                      >
+                        Delete
+                      </Button>
+                    </Popconfirm>,
                   ]}
                 >
                   <div className="mb-4">
@@ -132,7 +293,7 @@ const News = () => {
                               <Image
                                 key={idx}
                                 src={img}
-                                alt={`News ${item.id} image ${idx + 1}`}
+                                alt={`News image ${idx + 1}`}
                                 width={80}
                                 height={80}
                                 className="object-cover rounded"
@@ -155,10 +316,7 @@ const News = () => {
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between">
-                      <Text className="text-gray-400 text-xs">
-                        ID: {item.id}
-                      </Text>
+                    <div className="flex items-center justify-end">
                       <Text className="text-gray-400 text-xs">
                         {item.images?.length || 0} image
                         {item.images?.length !== 1 ? "s" : ""}
@@ -186,6 +344,129 @@ const News = () => {
           </>
         )}
       </div>
+
+      <Modal
+        title={editingNews ? "Edit News" : "Add News"}
+        open={isModalOpen}
+        onCancel={handleCancel}
+        onOk={handleSubmit}
+        okText={editingNews ? "Update" : "Add"}
+        width={800}
+        okButtonProps={{ loading: loading }}
+      >
+        <Form form={form} layout="vertical" className="mt-4">
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Title (English)"
+                name="title_en"
+                rules={[
+                  { required: true, message: "Please enter English title" },
+                ]}
+              >
+                <Input placeholder="Enter title in English" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Title (Arabic)"
+                name="title_ar"
+                rules={[
+                  { required: true, message: "Please enter Arabic title" },
+                ]}
+              >
+                <Input placeholder="أدخل العنوان بالعربية" dir="rtl" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Subtitle (English)"
+                name="subtitle_en"
+                rules={[
+                  { required: true, message: "Please enter English subtitle" },
+                ]}
+              >
+                <Input placeholder="Enter subtitle in English" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Subtitle (Arabic)"
+                name="subtitle_ar"
+                rules={[
+                  { required: true, message: "Please enter Arabic subtitle" },
+                ]}
+              >
+                <Input placeholder="أدخل العنوان الفرعي بالعربية" dir="rtl" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Description (English)"
+                name="description_en"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter English description",
+                  },
+                ]}
+              >
+                <TextArea rows={4} placeholder="Enter description in English" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Description (Arabic)"
+                name="description_ar"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter Arabic description",
+                  },
+                ]}
+              >
+                <TextArea
+                  rows={4}
+                  placeholder="أدخل الوصف بالعربية"
+                  dir="rtl"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item label="Images">
+            <Upload
+              listType="picture-card"
+              fileList={fileList}
+              onChange={handleUploadChange}
+              beforeUpload={beforeUpload}
+              multiple
+              accept="image/*"
+            >
+              {fileList.length < 10 && (
+                <div>
+                  <UploadOutlined />
+                  <div style={{ marginTop: 8 }}>Upload</div>
+                </div>
+              )}
+            </Upload>
+            <Text className="text-gray-500 text-xs block mt-2">
+              You can upload multiple images (up to 10 images)
+            </Text>
+            {fileList.length === 0 && (
+              <Text className="text-red-500 text-xs block mt-1">
+                Please upload at least one image
+              </Text>
+            )}
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };
