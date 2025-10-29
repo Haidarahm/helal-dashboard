@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Typography,
   Card,
@@ -12,6 +12,7 @@ import {
   Input,
   Upload,
   Popconfirm,
+  Popover,
   Row,
   Col,
 } from "antd";
@@ -24,6 +25,7 @@ import {
 } from "@ant-design/icons";
 import useNewsStore from "../store/newsStore";
 import { toast } from "react-toastify";
+import DescriptionText from "../components/DescriptionText";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -93,8 +95,8 @@ const News = () => {
       // Validate form fields
       const values = await form.validateFields();
 
-      // Validate images
-      if (fileList.length === 0) {
+      // Validate images - only required for new news, not for updates
+      if (!editingNews && fileList.length === 0) {
         toast.error("Please upload at least one image");
         return;
       }
@@ -107,52 +109,34 @@ const News = () => {
       formData.append("description_en", values.description_en);
       formData.append("description_ar", values.description_ar);
 
-      // Append image files
-      fileList.forEach((file, index) => {
-        // Ant Design Upload: when beforeUpload returns false, file.originFileObj contains the File object
-        // In some cases, file might be the File object directly
-        let fileToAppend = null;
+      // Append image files only if they exist
+      if (fileList.length > 0) {
+        fileList.forEach((file, index) => {
+          // Ant Design Upload: when beforeUpload returns false, file.originFileObj contains the File object
+          let fileToAppend = null;
 
-        if (file.originFileObj) {
-          fileToAppend = file.originFileObj;
-        } else if (file instanceof File) {
-          fileToAppend = file;
-        } else if (file.uid && file.name) {
-          // If it's a file from Upload component but originFileObj is missing, try to get the file
-          fileToAppend = file;
-        }
+          if (file.originFileObj) {
+            fileToAppend = file.originFileObj;
+          } else if (file instanceof File) {
+            fileToAppend = file;
+          }
 
-        if (fileToAppend instanceof File) {
-          formData.append("image[]", fileToAppend);
-          console.log(
-            `Image ${index + 1}:`,
-            fileToAppend.name,
-            fileToAppend.size
-          );
-        } else {
-          console.warn(`File ${index + 1} is not a valid File object:`, file);
-        }
-      });
-
-      // Debug: Log all FormData entries
-      console.log("FormData entries:");
-      for (let pair of formData.entries()) {
-        if (pair[1] instanceof File) {
-          console.log(`${pair[0]}:`, pair[1].name, `(${pair[1].size} bytes)`);
-        } else {
-          console.log(`${pair[0]}:`, pair[1]);
-        }
+          if (fileToAppend instanceof File) {
+            formData.append("image[]", fileToAppend);
+          }
+        });
       }
 
-      // Check if any images were added
-      const imageCount = Array.from(formData.entries()).filter(
-        (pair) => pair[0] === "image[]"
-      ).length;
-      console.log(`Total images to upload: ${imageCount}`);
+      // Only check for images when adding new news
+      if (!editingNews) {
+        const imageCount = Array.from(formData.entries()).filter(
+          (pair) => pair[0] === "image[]"
+        ).length;
 
-      if (imageCount === 0) {
-        toast.error("No valid images found. Please upload image files.");
-        return;
+        if (imageCount === 0) {
+          toast.error("No valid images found. Please upload image files.");
+          return;
+        }
       }
 
       if (editingNews) {
@@ -269,7 +253,7 @@ const News = () => {
                       <FileTextOutlined className="text-blue-500 text-xl" />
                       <Title
                         level={4}
-                        className="!mb-0 text-gray-900 line-clamp-2"
+                        className="!mb-0 text-gray-900 line-clamp-1"
                       >
                         {item.title}
                       </Title>
@@ -281,9 +265,12 @@ const News = () => {
                       </Text>
                     )}
 
-                    <Text className="text-gray-500 text-sm block mb-3 line-clamp-3">
-                      {item.description}
-                    </Text>
+                    <div className="mb-3">
+                      <DescriptionText
+                        description={item.description}
+                        maxLines={2}
+                      />
+                    </div>
 
                     {item.images && item.images.length > 0 && (
                       <div className="mb-3">
@@ -315,13 +302,6 @@ const News = () => {
                         )}
                       </div>
                     )}
-
-                    <div className="flex items-center justify-end">
-                      <Text className="text-gray-400 text-xs">
-                        {item.images?.length || 0} image
-                        {item.images?.length !== 1 ? "s" : ""}
-                      </Text>
-                    </div>
                   </div>
                 </Card>
               ))}
@@ -360,9 +340,16 @@ const News = () => {
               <Form.Item
                 label="Title (English)"
                 name="title_en"
-                rules={[
-                  { required: true, message: "Please enter English title" },
-                ]}
+                rules={
+                  editingNews
+                    ? []
+                    : [
+                        {
+                          required: true,
+                          message: "Please enter English title",
+                        },
+                      ]
+                }
               >
                 <Input placeholder="Enter title in English" />
               </Form.Item>
@@ -371,9 +358,11 @@ const News = () => {
               <Form.Item
                 label="Title (Arabic)"
                 name="title_ar"
-                rules={[
-                  { required: true, message: "Please enter Arabic title" },
-                ]}
+                rules={
+                  editingNews
+                    ? []
+                    : [{ required: true, message: "Please enter Arabic title" }]
+                }
               >
                 <Input placeholder="أدخل العنوان بالعربية" dir="rtl" />
               </Form.Item>
@@ -385,9 +374,16 @@ const News = () => {
               <Form.Item
                 label="Subtitle (English)"
                 name="subtitle_en"
-                rules={[
-                  { required: true, message: "Please enter English subtitle" },
-                ]}
+                rules={
+                  editingNews
+                    ? []
+                    : [
+                        {
+                          required: true,
+                          message: "Please enter English subtitle",
+                        },
+                      ]
+                }
               >
                 <Input placeholder="Enter subtitle in English" />
               </Form.Item>
@@ -396,9 +392,16 @@ const News = () => {
               <Form.Item
                 label="Subtitle (Arabic)"
                 name="subtitle_ar"
-                rules={[
-                  { required: true, message: "Please enter Arabic subtitle" },
-                ]}
+                rules={
+                  editingNews
+                    ? []
+                    : [
+                        {
+                          required: true,
+                          message: "Please enter Arabic subtitle",
+                        },
+                      ]
+                }
               >
                 <Input placeholder="أدخل العنوان الفرعي بالعربية" dir="rtl" />
               </Form.Item>
@@ -410,12 +413,16 @@ const News = () => {
               <Form.Item
                 label="Description (English)"
                 name="description_en"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter English description",
-                  },
-                ]}
+                rules={
+                  editingNews
+                    ? []
+                    : [
+                        {
+                          required: true,
+                          message: "Please enter English description",
+                        },
+                      ]
+                }
               >
                 <TextArea rows={4} placeholder="Enter description in English" />
               </Form.Item>
@@ -424,12 +431,16 @@ const News = () => {
               <Form.Item
                 label="Description (Arabic)"
                 name="description_ar"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter Arabic description",
-                  },
-                ]}
+                rules={
+                  editingNews
+                    ? []
+                    : [
+                        {
+                          required: true,
+                          message: "Please enter Arabic description",
+                        },
+                      ]
+                }
               >
                 <TextArea
                   rows={4}
@@ -458,12 +469,12 @@ const News = () => {
             </Upload>
             <Text className="text-gray-500 text-xs block mt-2">
               You can upload multiple images (up to 10 images)
+              {!editingNews && (
+                <span className="text-red-500 ml-1">
+                  (Required for new news)
+                </span>
+              )}
             </Text>
-            {fileList.length === 0 && (
-              <Text className="text-red-500 text-xs block mt-1">
-                Please upload at least one image
-              </Text>
-            )}
           </Form.Item>
         </Form>
       </Modal>
