@@ -1,49 +1,33 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Form, Input, Button, message } from "antd";
+import { Form, Input, Button } from "antd";
+import { toast } from "react-toastify";
 import {
   MailOutlined,
   LockOutlined,
   ArrowRightOutlined,
 } from "@ant-design/icons";
 import { FiLock } from "react-icons/fi";
+import useAuthStore from "../store/authStore";
+import { useAuthContext } from "../context/AuthContext";
 
 const Login = () => {
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
-  // Fake credentials for testing
-  const validCredentials = [
-    { email: "admin", password: "admin123" },
-    { email: "user@example.com", password: "password123" },
-    { email: "test@test.com", password: "test123" },
-    { email: "demo@demo.com", password: "demo123" },
-    { email: "admin@admin.com", password: "admin" },
-    { email: "user@user.com", password: "user123" },
-  ];
+  const { setToken } = useAuthContext();
+  const { login, loading, error } = useAuthStore();
 
   const onFinish = async (values) => {
-    setLoading(true);
+    const result = await login(values.email, values.password, setToken);
 
-    setTimeout(() => {
-      const isValid = validCredentials.some(
-        (cred) =>
-          cred.email === values.email && cred.password === values.password
-      );
-
-      if (isValid) {
-        localStorage.setItem("isAuthenticated", "true");
-        message.success("Welcome back!");
-        navigate("/dashboard");
-      } else {
-        message.error("Invalid credentials");
-      }
-      setLoading(false);
-    }, 500);
+    if (result.success) {
+      toast.success("Welcome back!");
+      navigate("/dashboard");
+    } else {
+      toast.error(result.error || "Invalid credentials");
+    }
   };
 
   const handleResetPassword = () => {
-    message.info("Reset password functionality coming soon");
+    toast.info("Reset password functionality coming soon");
   };
 
   return (
