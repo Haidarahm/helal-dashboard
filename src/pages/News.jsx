@@ -277,21 +277,25 @@ const News = () => {
                         <Image.PreviewGroup>
                           <div className="flex gap-2 flex-wrap">
                             {item.images.slice(0, 3).map((img, idx) => (
-                              <Image
+                              <div
                                 key={idx}
-                                src={img}
-                                alt={`News image ${idx + 1}`}
-                                width={80}
-                                height={80}
-                                className="object-cover rounded"
-                                preview={{
-                                  mask:
-                                    "+" +
-                                    (item.images.length > 3
-                                      ? item.images.length - 3
-                                      : 0),
+                                className="relative overflow-hidden rounded cursor-pointer transition-all duration-300 hover:scale-110 hover:shadow-lg hover:z-10"
+                                style={{
+                                  width: "80px",
+                                  height: "80px",
                                 }}
-                              />
+                              >
+                                <Image
+                                  src={img}
+                                  alt={`News image ${idx + 1}`}
+                                  width={80}
+                                  height={80}
+                                  className="object-cover rounded transition-transform duration-300 hover:scale-110"
+                                  preview={{
+                                    mask: false,
+                                  }}
+                                />
+                              </div>
                             ))}
                           </div>
                         </Image.PreviewGroup>
