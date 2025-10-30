@@ -33,16 +33,25 @@ const useVideosStore = create((set, get) => ({
         per_page,
       });
 
-      if (response?.status || response?.success || response?.data) {
-        const list = response.data?.data || response.data || [];
-        const pagination = response.pagination ||
-          response.data?.pagination || {
-            current_page: page,
-            last_page: page,
-            per_page,
-            total: Array.isArray(list) ? list.length : 0,
-          };
-        set({ loading: false, videos: list, pagination, error: null });
+      // Normalize to expected backend shape
+      const root =
+        response?.videos || response?.data?.videos || response?.data || {};
+      const list = root?.data || [];
+      const meta = root?.meta || {};
+      const normalizedPagination = {
+        current_page: meta.current_page ?? page,
+        last_page: meta.last_page ?? page,
+        per_page: meta.per_page ?? per_page,
+        total: meta.total ?? (Array.isArray(list) ? list.length : 0),
+      };
+
+      if (Array.isArray(list)) {
+        set({
+          loading: false,
+          videos: list,
+          pagination: normalizedPagination,
+          error: null,
+        });
         return { success: true, data: response };
       }
 
