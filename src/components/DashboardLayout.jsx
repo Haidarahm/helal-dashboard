@@ -12,6 +12,7 @@ import {
   BellOutlined,
   BookOutlined,
   FileTextOutlined,
+  VideoCameraOutlined, // Added for live video
 } from "@ant-design/icons";
 import useAuthStore from "../store/authStore";
 import { useAuthContext } from "../context/AuthContext";
@@ -44,6 +45,12 @@ const DashboardLayout = () => {
       icon: <FileTextOutlined />,
       label: "News",
       onClick: () => navigate("/dashboard/news"),
+    },
+    {
+      key: "/dashboard/live-video",
+      icon: <VideoCameraOutlined />, // New menu item for Live Video
+      label: "Live Video",
+      onClick: () => navigate("/dashboard/live-video"),
     },
     {
       key: "/dashboard/users",
