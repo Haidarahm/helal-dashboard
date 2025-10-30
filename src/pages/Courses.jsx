@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Typography,
   Card,
@@ -31,6 +32,7 @@ const { Title, Text } = Typography;
 const { TextArea } = Input;
 
 const Courses = () => {
+  const navigate = useNavigate();
   const {
     courses,
     loading,
@@ -237,6 +239,16 @@ const Courses = () => {
                 key={item.id}
                 className="hover:shadow-md transition-shadow border-gray-200"
                 actions={[
+                  <Button
+                    type="text"
+                    key="videos"
+                    className="text-green-600"
+                    onClick={() =>
+                      navigate(`/dashboard/courses/${item.id}/videos`)
+                    }
+                  >
+                    Videos
+                  </Button>,
                   <Button
                     type="text"
                     icon={<EditOutlined />}

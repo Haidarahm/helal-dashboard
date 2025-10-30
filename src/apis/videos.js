@@ -28,7 +28,8 @@ export const videosApi = {
     const formData = buildVideoFormData(fields);
     const response = await axiosInstance.post(
       "/api/admin/videos/store",
-      formData
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
     );
     return response.data;
   },
@@ -38,7 +39,8 @@ export const videosApi = {
     const formData = buildVideoFormData(fields);
     const response = await axiosInstance.post(
       `/api/admin/videos/update/${id}`,
-      formData
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
     );
     return response.data;
   },

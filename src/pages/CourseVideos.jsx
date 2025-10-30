@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
 import useVideosStore from "../store/videosStore";
 import {
   Modal,
@@ -10,6 +11,7 @@ import {
   Col,
   Card,
   Pagination,
+  message,
 } from "antd";
 
 const resolveUrl = (url) => {
@@ -33,6 +35,8 @@ const initialForm = {
 };
 
 export default function CourseVideos({ id }) {
+  const params = useParams();
+  const effectiveId = id ?? params?.id;
   const {
     videos,
     pagination,
@@ -51,23 +55,24 @@ export default function CourseVideos({ id }) {
   const [form] = Form.useForm();
 
   useEffect(() => {
-    if (id) fetchCourseVideos(id, { lang, page, per_page: perPage });
+    if (effectiveId)
+      fetchCourseVideos(effectiveId, { lang, page, per_page: perPage });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, page, perPage, lang]);
+  }, [effectiveId, page, perPage, lang]);
 
   useEffect(() => {
     // Initialize form course_id whenever opening
     if (isModalOpen) {
-      form.setFieldsValue({ course_id: id });
+      form.setFieldsValue({ course_id: effectiveId });
     }
-  }, [isModalOpen, id, form]);
+  }, [isModalOpen, effectiveId, form]);
 
   const list = useMemo(() => videos || [], [videos]);
 
   const openAdd = () => {
     setEditing(null);
     form.resetFields();
-    form.setFieldsValue({ ...initialForm, course_id: id });
+    form.setFieldsValue({ ...initialForm, course_id: effectiveId });
     setIsModalOpen(true);
   };
 
@@ -94,6 +99,15 @@ export default function CourseVideos({ id }) {
     return e && e.fileList && e.fileList[0]?.originFileObj;
   };
 
+  const beforeUploadVideo = (file) => {
+    const isMp4 = file.type === "video/mp4" || /\.mp4$/i.test(file.name);
+    if (!isMp4) {
+      message.error("Only MP4 files are allowed");
+      return Upload.LIST_IGNORE;
+    }
+    return false; // prevent auto upload
+  };
+
   const handleOk = async () => {
     const values = await form.validateFields();
     const payload = {
@@ -105,6 +119,10 @@ export default function CourseVideos({ id }) {
       if (editing) {
         await updateVideo(editing.id, payload);
       } else {
+        if (!payload.path) {
+          message.error("Video file is required (MP4)");
+          return;
+        }
         await createVideo(payload);
       }
       setIsModalOpen(false);
@@ -128,7 +146,7 @@ export default function CourseVideos({ id }) {
         }}
       >
         <h3 style={{ margin: 0 }}>Course Videos</h3>
-        <Button type="primary" onClick={openAdd} disabled={!id}>
+        <Button type="primary" onClick={openAdd} disabled={!effectiveId}>
           Add Video
         </Button>
       </div>
@@ -210,14 +228,14 @@ export default function CourseVideos({ id }) {
         <Form
           form={form}
           layout="vertical"
-          initialValues={{ ...initialForm, course_id: id }}
+          initialValues={{ ...initialForm, course_id: effectiveId }}
         >
           <Form.Item
             label="Course ID"
             name="course_id"
             rules={[{ required: true, message: "Required" }]}
           >
-            <Input disabled value={id} />
+            <Input disabled value={effectiveId} />
           </Form.Item>
 
           <Form.Item label="YouTube Path" name="youtube_path">
@@ -250,13 +268,19 @@ export default function CourseVideos({ id }) {
           </Form.Item>
 
           <Form.Item
-            label="Video File"
+            label="Video File (MP4)"
             name="path"
             valuePropName="file"
             getValueFromEvent={extractFile}
+            rules={
+              editing
+                ? []
+                : [{ required: true, message: "Please select an MP4 video" }]
+            }
           >
             <Upload
-              beforeUpload={() => false}
+              beforeUpload={beforeUploadVideo}
+              accept="video/mp4"
               maxCount={1}
               onRemove={onRemoveFile}
             >

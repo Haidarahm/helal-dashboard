@@ -10,6 +10,7 @@ import DashboardHome from "./pages/DashboardHome";
 import Courses from "./pages/Courses";
 import News from "./pages/News";
 import LiveVideo from "./pages/LiveVideo";
+import CourseVideos from "./pages/CourseVideos";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import "antd/dist/reset.css";
@@ -43,6 +44,10 @@ const router = createBrowserRouter([
       {
         path: "live-video",
         element: <LiveVideo />,
+      },
+      {
+        path: "courses/:id/videos",
+        element: <CourseVideos />,
       },
     ],
   },
