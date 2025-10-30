@@ -59,6 +59,32 @@ export default function CourseVideos({ id }) {
   const [form] = Form.useForm();
   const [playItem, setPlayItem] = useState(null);
 
+  // Watch mutually exclusive fields
+  const watchedYoutube = Form.useWatch("youtube_path", form);
+  const watchedFile = Form.useWatch("path", form);
+
+  const getYouTubeEmbedUrl = (val) => {
+    if (!val) return "";
+    try {
+      // If it's already an ID (no protocol and short), assume ID
+      if (!/^https?:\/\//i.test(val)) {
+        return `https://www.youtube.com/embed/${val}`;
+      }
+      const u = new URL(val);
+      if (u.hostname.includes("youtu.be")) {
+        const id = u.pathname.split("/").filter(Boolean)[0];
+        return `https://www.youtube.com/embed/${id}`;
+      }
+      if (u.hostname.includes("youtube.com")) {
+        const id = u.searchParams.get("v");
+        if (id) return `https://www.youtube.com/embed/${id}`;
+      }
+      return val; // fallback
+    } catch {
+      return `https://www.youtube.com/embed/${val}`;
+    }
+  };
+
   useEffect(() => {
     if (effectiveId)
       fetchCourseVideos(effectiveId, { lang, page, per_page: perPage });
@@ -120,14 +146,18 @@ export default function CourseVideos({ id }) {
       path: values.path || null,
       cover: values.cover || null,
     };
+    const hasFile = !!payload.path;
+    const hasYoutube = !!(
+      payload.youtube_path && String(payload.youtube_path).trim()
+    );
+    if ((hasFile && hasYoutube) || (!hasFile && !hasYoutube)) {
+      message.error("Provide either a YouTube link or an MP4 file (not both)");
+      return;
+    }
     try {
       if (editing) {
         await updateVideo(editing.id, payload);
       } else {
-        if (!payload.path) {
-          message.error("Video file is required (MP4)");
-          return;
-        }
         await createVideo(payload);
       }
       setIsModalOpen(false);
@@ -260,7 +290,7 @@ export default function CourseVideos({ id }) {
           </Form.Item>
 
           <Form.Item label="YouTube Path" name="youtube_path">
-            <Input placeholder="youtube url or id" />
+            <Input placeholder="youtube url or id" disabled={!!watchedFile} />
           </Form.Item>
 
           <Form.Item
@@ -304,6 +334,7 @@ export default function CourseVideos({ id }) {
               accept="video/mp4"
               maxCount={1}
               onRemove={onRemoveFile}
+              disabled={!!watchedYoutube}
             >
               <Button>Select Video</Button>
             </Upload>
@@ -337,15 +368,33 @@ export default function CourseVideos({ id }) {
         footer={null}
         width={800}
       >
-        {playItem && (
-          <video
-            key={playItem.id}
-            src={resolveUrl(playItem.path)}
-            style={{ width: "100%" }}
-            controls
-            autoPlay
-          />
-        )}
+        {playItem &&
+          (playItem.youtube_path ? (
+            <div style={{ position: "relative", paddingTop: "56.25%" }}>
+              <iframe
+                title="youtube-player"
+                src={getYouTubeEmbedUrl(playItem.youtube_path)}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  border: 0,
+                }}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <video
+              key={playItem.id}
+              src={resolveUrl(playItem.path)}
+              style={{ width: "100%" }}
+              controls
+              autoPlay
+            />
+          ))}
       </Modal>
     </div>
   );
