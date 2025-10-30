@@ -6,6 +6,7 @@ const useVideosStore = create((set, get) => ({
   loading: false,
   error: null,
   videos: [],
+  uploadProgress: 0,
   pagination: {
     current_page: 1,
     last_page: 1,
@@ -72,11 +73,17 @@ const useVideosStore = create((set, get) => ({
 
   // Create video
   createVideo: async (fields) => {
-    set({ loading: true, error: null });
+    set({ loading: true, error: null, uploadProgress: 0 });
     try {
-      const resp = await videosApi.create(fields);
+      const resp = await videosApi.create(fields, {
+        onUploadProgress: (e) => {
+          if (!e.total) return;
+          const pct = Math.round((e.loaded / e.total) * 100);
+          set({ uploadProgress: pct });
+        },
+      });
       toast.success("Video created successfully");
-      set({ loading: false });
+      set({ loading: false, uploadProgress: 0 });
       const { currentCourseId, language, pagination } = get();
       if (currentCourseId) {
         await get().fetchCourseVideos(currentCourseId, {
@@ -92,7 +99,7 @@ const useVideosStore = create((set, get) => ({
         error?.response?.data?.error ||
         error?.message ||
         "Failed to create video";
-      set({ loading: false, error: errorMessage });
+      set({ loading: false, error: errorMessage, uploadProgress: 0 });
       toast.error(errorMessage);
       return { success: false, error: errorMessage };
     }
@@ -100,11 +107,17 @@ const useVideosStore = create((set, get) => ({
 
   // Update video
   updateVideo: async (id, fields) => {
-    set({ loading: true, error: null });
+    set({ loading: true, error: null, uploadProgress: 0 });
     try {
-      const resp = await videosApi.update(id, fields);
+      const resp = await videosApi.update(id, fields, {
+        onUploadProgress: (e) => {
+          if (!e.total) return;
+          const pct = Math.round((e.loaded / e.total) * 100);
+          set({ uploadProgress: pct });
+        },
+      });
       toast.success("Video updated successfully");
-      set({ loading: false });
+      set({ loading: false, uploadProgress: 0 });
       const { currentCourseId, language, pagination } = get();
       if (currentCourseId) {
         await get().fetchCourseVideos(currentCourseId, {
@@ -120,7 +133,7 @@ const useVideosStore = create((set, get) => ({
         error?.response?.data?.error ||
         error?.message ||
         "Failed to update video";
-      set({ loading: false, error: errorMessage });
+      set({ loading: false, error: errorMessage, uploadProgress: 0 });
       toast.error(errorMessage);
       return { success: false, error: errorMessage };
     }

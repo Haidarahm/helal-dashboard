@@ -12,7 +12,10 @@ import {
   Card,
   Pagination,
   message,
+  Progress,
+  Popconfirm,
 } from "antd";
+import { FiPlay } from "react-icons/fi";
 
 const resolveUrl = (url) => {
   if (!url) return "";
@@ -46,6 +49,7 @@ export default function CourseVideos({ id }) {
     updateVideo,
     deleteVideo,
   } = useVideosStore();
+  const uploadProgress = useVideosStore((s) => s.uploadProgress);
 
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -53,6 +57,7 @@ export default function CourseVideos({ id }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form] = Form.useForm();
+  const [playItem, setPlayItem] = useState(null);
 
   useEffect(() => {
     if (effectiveId)
@@ -165,17 +170,25 @@ export default function CourseVideos({ id }) {
                 ) : null
               }
               actions={[
+                <Button key="play" type="link" onClick={() => setPlayItem(v)}>
+                  <FiPlay style={{ marginRight: 6 }} /> Play
+                </Button>,
                 <Button key="edit" type="link" onClick={() => openEdit(v)}>
                   Edit
                 </Button>,
-                <Button
+                <Popconfirm
                   key="delete"
-                  type="link"
-                  danger
-                  onClick={() => handleDelete(v.id)}
+                  title="Delete Video"
+                  description="Are you sure you want to delete this video?"
+                  okText="Yes"
+                  cancelText="No"
+                  okButtonProps={{ danger: true }}
+                  onConfirm={() => handleDelete(v.id)}
                 >
-                  Delete
-                </Button>,
+                  <Button type="link" danger>
+                    Delete
+                  </Button>
+                </Popconfirm>,
               ]}
               loading={loading}
             >
@@ -225,6 +238,14 @@ export default function CourseVideos({ id }) {
         okButtonProps={{ loading }}
         destroyOnClose
       >
+        {loading && uploadProgress > 0 && (
+          <div style={{ marginBottom: 12 }}>
+            <Progress
+              percent={uploadProgress}
+              status={uploadProgress < 100 ? "active" : "normal"}
+            />
+          </div>
+        )}
         <Form
           form={form}
           layout="vertical"
@@ -303,6 +324,28 @@ export default function CourseVideos({ id }) {
             </Upload>
           </Form.Item>
         </Form>
+      </Modal>
+
+      <Modal
+        title={
+          playItem
+            ? playItem.title || playItem.title_en || "Preview"
+            : "Preview"
+        }
+        open={!!playItem}
+        onCancel={() => setPlayItem(null)}
+        footer={null}
+        width={800}
+      >
+        {playItem && (
+          <video
+            key={playItem.id}
+            src={resolveUrl(playItem.path)}
+            style={{ width: "100%" }}
+            controls
+            autoPlay
+          />
+        )}
       </Modal>
     </div>
   );

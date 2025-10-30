@@ -24,23 +24,29 @@ function buildVideoFormData(fields) {
 
 export const videosApi = {
   // Create a new video (multipart)
-  create: async (fields) => {
+  create: async (fields, options = {}) => {
     const formData = buildVideoFormData(fields);
     const response = await axiosInstance.post(
       "/api/admin/videos/store",
       formData,
-      { headers: { "Content-Type": "multipart/form-data" } }
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: options.onUploadProgress,
+      }
     );
     return response.data;
   },
 
   // Update existing video by id (multipart)
-  update: async (id, fields) => {
+  update: async (id, fields, options = {}) => {
     const formData = buildVideoFormData(fields);
     const response = await axiosInstance.post(
       `/api/admin/videos/update/${id}`,
       formData,
-      { headers: { "Content-Type": "multipart/form-data" } }
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: options.onUploadProgress,
+      }
     );
     return response.data;
   },
