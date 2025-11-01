@@ -16,13 +16,7 @@ const Login = () => {
   const { setToken } = useAuthContext();
   const { login, loading, error } = useAuthStore();
 
-  // Redirect to dashboard only if explicitly authenticated
-  useEffect(() => {
-    const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
-    if (isAuthenticated) {
-      navigate("/dashboard", { replace: true });
-    }
-  }, [navigate]);
+  // AuthGate handles initial redirect; no redirect here to avoid flicker
 
   const onFinish = async (values) => {
     const result = await login(values.email, values.password, setToken);

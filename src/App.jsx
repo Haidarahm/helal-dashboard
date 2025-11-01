@@ -4,7 +4,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
-import Login from "./components/Login";
+import AuthGate from "./components/AuthGate";
 import DashboardLayout from "./components/DashboardLayout";
 import DashboardHome from "./pages/DashboardHome";
 import Courses from "./pages/Courses";
@@ -20,7 +20,7 @@ import "react-toastify/dist/ReactToastify.css";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Login />,
+    element: <AuthGate />,
   },
   {
     path: "/dashboard",
