@@ -14,6 +14,8 @@ import {
   FileTextOutlined,
   VideoCameraOutlined, // Added for live video
 } from "@ant-design/icons";
+import { FiVideo } from "react-icons/fi";
+import StartMeetingModal from "./StartMeetingModal";
 import useAuthStore from "../store/authStore";
 import { useAuthContext } from "../context/AuthContext";
 
@@ -22,6 +24,8 @@ const { Title } = Typography;
 
 const DashboardLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [meetOpen, setMeetOpen] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuthStore();
@@ -132,6 +136,17 @@ const DashboardLayout = () => {
         <div className="flex items-center gap-3">
           <Button
             type="text"
+            icon={<FiVideo />}
+            className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            onClick={() => setMeetOpen(true)}
+          />
+          <Button
+            type="text"
             icon={<BellOutlined />}
             className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
             style={{
@@ -150,6 +165,7 @@ const DashboardLayout = () => {
           </Dropdown>
         </div>
       </Header>
+      <StartMeetingModal open={meetOpen} onClose={() => setMeetOpen(false)} />
 
       <Layout>
         {/* Main Content */}
