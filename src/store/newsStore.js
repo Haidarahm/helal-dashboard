@@ -45,7 +45,7 @@ const useNewsStore = create((set) => ({
         error.message ||
         "Failed to fetch news";
       set({ loading: false, error: errorMessage });
-      toast.error(errorMessage);
+    
       return { success: false, error: errorMessage };
     }
   },

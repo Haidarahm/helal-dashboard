@@ -28,11 +28,18 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response?.status === 401) {
+    const status = error.response?.status;
+    const reqUrl = error.config?.url || "";
+    if (status === 401) {
+      // Do not redirect on login attempt; let caller handle invalid credentials
+      if (reqUrl.includes("/api/login")) {
+        return Promise.reject(error);
+      }
       localStorage.removeItem("token");
       localStorage.removeItem("isAuthenticated");
       toast.error("Session expired. Please login again.");
       window.location.href = "/";
+      return Promise.reject(error);
     } else if (error.response?.status >= 500) {
       toast.error("Server error. Please try again later.");
     } else if (error.response?.status >= 400) {

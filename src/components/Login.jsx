@@ -16,10 +16,10 @@ const Login = () => {
   const { setToken } = useAuthContext();
   const { login, loading, error } = useAuthStore();
 
-  // Redirect to dashboard if token exists in localStorage
+  // Redirect to dashboard only if explicitly authenticated
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
+    const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
+    if (isAuthenticated) {
       navigate("/dashboard", { replace: true });
     }
   }, [navigate]);
