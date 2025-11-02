@@ -103,41 +103,62 @@ const Courses = () => {
 
       const formData = new FormData();
 
-      // Always send all fields for both add and update
-      formData.append("title_en", values.title_en || "");
-      formData.append("title_ar", values.title_ar || "");
-      formData.append("subTitle_en", values.subTitle_en || "");
-      formData.append("subTitle_ar", values.subTitle_ar || "");
-      formData.append("description_en", values.description_en || "");
-      formData.append("description_ar", values.description_ar || "");
+      const appendIfPresent = (key, val) => {
+        if (val === undefined || val === null) return;
+        if (typeof val === "string" && val.trim() === "") return;
+        formData.append(key, val);
+      };
 
-      // Handle numbers - convert to string
-      formData.append(
-        "price_aed",
-        values.price_aed !== undefined && values.price_aed !== null
-          ? values.price_aed.toString()
-          : "0.00"
-      );
-      formData.append(
-        "price_usd",
-        values.price_usd !== undefined && values.price_usd !== null
-          ? values.price_usd.toString()
-          : "0.00"
-      );
-      formData.append(
-        "reviews",
-        values.reviews !== undefined && values.reviews !== null
-          ? values.reviews.toString()
-          : "0"
-      );
-
-      // Append image file only if it exists (single image)
-      if (fileList.length > 0 && fileList[0].originFileObj) {
-        formData.append("image", fileList[0].originFileObj);
-      }
-
-      // Only check for image when adding new course
-      if (!editingCourse) {
+      if (editingCourse) {
+        // Update: only append non-empty fields
+        appendIfPresent("title_en", values.title_en);
+        appendIfPresent("title_ar", values.title_ar);
+        appendIfPresent("subTitle_en", values.subTitle_en);
+        appendIfPresent("subTitle_ar", values.subTitle_ar);
+        appendIfPresent("description_en", values.description_en);
+        appendIfPresent("description_ar", values.description_ar);
+        if (values.price_aed !== undefined && values.price_aed !== null) {
+          appendIfPresent("price_aed", values.price_aed.toString());
+        }
+        if (values.price_usd !== undefined && values.price_usd !== null) {
+          appendIfPresent("price_usd", values.price_usd.toString());
+        }
+        if (values.reviews !== undefined && values.reviews !== null) {
+          appendIfPresent("reviews", values.reviews.toString());
+        }
+        if (fileList.length > 0 && fileList[0].originFileObj) {
+          formData.append("image", fileList[0].originFileObj);
+        }
+      } else {
+        // Create: send all fields (as before)
+        formData.append("title_en", values.title_en || "");
+        formData.append("title_ar", values.title_ar || "");
+        formData.append("subTitle_en", values.subTitle_en || "");
+        formData.append("subTitle_ar", values.subTitle_ar || "");
+        formData.append("description_en", values.description_en || "");
+        formData.append("description_ar", values.description_ar || "");
+        formData.append(
+          "price_aed",
+          values.price_aed !== undefined && values.price_aed !== null
+            ? values.price_aed.toString()
+            : "0.00"
+        );
+        formData.append(
+          "price_usd",
+          values.price_usd !== undefined && values.price_usd !== null
+            ? values.price_usd.toString()
+            : "0.00"
+        );
+        formData.append(
+          "reviews",
+          values.reviews !== undefined && values.reviews !== null
+            ? values.reviews.toString()
+            : "0"
+        );
+        // Image required for create
+        if (fileList.length > 0 && fileList[0].originFileObj) {
+          formData.append("image", fileList[0].originFileObj);
+        }
         if (fileList.length === 0 || !fileList[0].originFileObj) {
           toast.error("Please upload an image");
           return;

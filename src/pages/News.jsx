@@ -95,46 +95,41 @@ const News = () => {
       // Validate form fields
       const values = await form.validateFields();
 
-      // Validate images - only required for new news, not for updates
-      if (!editingNews && fileList.length === 0) {
-        toast.error("Please upload at least one image");
-        return;
-      }
-
       const formData = new FormData();
-      formData.append("title_en", values.title_en);
-      formData.append("title_ar", values.title_ar);
-      formData.append("subtitle_en", values.subtitle_en);
-      formData.append("subtitle_ar", values.subtitle_ar);
-      formData.append("description_en", values.description_en);
-      formData.append("description_ar", values.description_ar);
 
-      // Append image files only if they exist
+      const appendIfPresent = (key, val) => {
+        if (val === undefined || val === null) return;
+        if (typeof val === "string" && val.trim() === "") return;
+        formData.append(key, val);
+      };
+
+      // On create, all fields from values are appended (they passed required checks)
+      // On update, only non-empty fields are appended
+      appendIfPresent("title_en", values.title_en);
+      appendIfPresent("title_ar", values.title_ar);
+      appendIfPresent("subtitle_en", values.subtitle_en);
+      appendIfPresent("subtitle_ar", values.subtitle_ar);
+      appendIfPresent("description_en", values.description_en);
+      appendIfPresent("description_ar", values.description_ar);
+
+      // Images: only append if provided
       if (fileList.length > 0) {
-        fileList.forEach((file, index) => {
-          // Ant Design Upload: when beforeUpload returns false, file.originFileObj contains the File object
+        fileList.forEach((file) => {
           let fileToAppend = null;
-
-          if (file.originFileObj) {
-            fileToAppend = file.originFileObj;
-          } else if (file instanceof File) {
-            fileToAppend = file;
-          }
-
-          if (fileToAppend instanceof File) {
+          if (file.originFileObj) fileToAppend = file.originFileObj;
+          else if (file instanceof File) fileToAppend = file;
+          if (fileToAppend instanceof File)
             formData.append("image[]", fileToAppend);
-          }
         });
       }
 
-      // Only check for images when adding new news
+      // For create: at least one image required
       if (!editingNews) {
-        const imageCount = Array.from(formData.entries()).filter(
-          (pair) => pair[0] === "image[]"
-        ).length;
-
-        if (imageCount === 0) {
-          toast.error("No valid images found. Please upload image files.");
+        const hasImage = Array.from(formData.keys()).some(
+          (k) => k === "image[]"
+        );
+        if (!hasImage) {
+          toast.error("Please upload at least one image");
           return;
         }
       }
