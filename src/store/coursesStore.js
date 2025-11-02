@@ -7,6 +7,13 @@ const useCoursesStore = create((set) => ({
   error: null,
   courses: [],
   language: "en",
+  courseUsers: [],
+  courseUsersPagination: {
+    current_page: 1,
+    last_page: 1,
+    per_page: 10,
+    total: 0,
+  },
 
   // Get all courses
   fetchCourses: async (language = "en") => {
@@ -118,6 +125,46 @@ const useCoursesStore = create((set) => ({
         error.response?.data?.error ||
         error.message ||
         "Failed to delete course";
+      set({ loading: false, error: errorMessage });
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  },
+
+  // Fetch users enrolled in a specific course
+  fetchCourseUsers: async (courseId, page = 1, per_page = 10) => {
+    set({ loading: true, error: null });
+    try {
+      const resp = await coursesApi.getCoursesUsers({
+        page,
+        per_page,
+        course_id: courseId,
+      });
+      if (resp?.status || resp?.data) {
+        const users = resp.data || [];
+        const pagination = resp.pagination || {
+          current_page: page,
+          last_page: page,
+          per_page,
+          total: Array.isArray(users) ? users.length : 0,
+        };
+        set({
+          loading: false,
+          courseUsers: users,
+          courseUsersPagination: pagination,
+        });
+        return { success: true, data: resp };
+      }
+      const msg = resp?.message || "Failed to fetch course users";
+      set({ loading: false, error: msg });
+      toast.error(msg);
+      return { success: false, error: msg };
+    } catch (error) {
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        "Failed to fetch course users";
       set({ loading: false, error: errorMessage });
       toast.error(errorMessage);
       return { success: false, error: errorMessage };

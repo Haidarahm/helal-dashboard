@@ -14,6 +14,7 @@ import {
   FileTextOutlined,
   VideoCameraOutlined, // Added for live video
 } from "@ant-design/icons";
+import { PhoneOutlined } from "@ant-design/icons";
 import { CalendarOutlined } from "@ant-design/icons";
 import { FiVideo } from "react-icons/fi";
 import StartMeetingModal from "./StartMeetingModal";
@@ -62,6 +63,12 @@ const DashboardLayout = () => {
       icon: <CalendarOutlined />,
       label: "Meetings",
       onClick: () => navigate("/dashboard/meetings"),
+    },
+    {
+      key: "/dashboard/consultations",
+      icon: <PhoneOutlined />,
+      label: "Consultations",
+      onClick: () => navigate("/dashboard/consultations"),
     },
     {
       key: "/dashboard/users",

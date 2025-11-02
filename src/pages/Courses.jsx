@@ -15,6 +15,8 @@ import {
   Row,
   Col,
   InputNumber,
+  Table,
+  Select,
 } from "antd";
 import {
   BookOutlined,
@@ -24,6 +26,7 @@ import {
   UploadOutlined,
 } from "@ant-design/icons";
 import useCoursesStore from "../store/coursesStore";
+import useMeetingsStore from "../store/meetingsStore";
 import { coursesApi } from "../apis/courses";
 import { toast } from "react-toastify";
 import DescriptionText from "../components/DescriptionText";
@@ -40,12 +43,26 @@ const Courses = () => {
     deleteCourse,
     addCourse,
     updateCourse,
+    // users
+    courseUsers,
+    courseUsersPagination,
+    fetchCourseUsers,
   } = useCoursesStore();
+  const { meetings, fetchMeetings, sendUsersEmailRoom, sending } =
+    useMeetingsStore();
   const [language, setLanguage] = useState("en");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
+  // Users modal state
+  const [usersModalOpen, setUsersModalOpen] = useState(false);
+  const [usersCourseId, setUsersCourseId] = useState(null);
+  const [usersPage, setUsersPage] = useState(1);
+  const [usersPerPage, setUsersPerPage] = useState(5);
+  const [usersSelectedRowKeys, setUsersSelectedRowKeys] = useState([]);
+  const [meetingId, setMeetingId] = useState(null);
+  const [showMeetingSelect, setShowMeetingSelect] = useState(false);
 
   useEffect(() => {
     fetchCourses(language);
@@ -262,6 +279,21 @@ const Courses = () => {
                 actions={[
                   <Button
                     type="text"
+                    key="users"
+                    className="text-purple-600"
+                    onClick={async () => {
+                      setUsersCourseId(item.id);
+                      setUsersPage(1);
+                      setUsersPerPage(5);
+                      setUsersSelectedRowKeys([]);
+                      await fetchCourseUsers(item.id, 1, 5);
+                      setUsersModalOpen(true);
+                    }}
+                  >
+                    Users
+                  </Button>,
+                  <Button
+                    type="text"
                     key="videos"
                     className="text-green-600"
                     onClick={() =>
@@ -364,6 +396,91 @@ const Courses = () => {
           </div>
         )}
       </div>
+
+      <Modal
+        title="Course Users"
+        open={usersModalOpen}
+        onCancel={() => setUsersModalOpen(false)}
+        footer={null}
+        width={720}
+        destroyOnClose
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 12,
+          }}
+        >
+          <div>
+            {showMeetingSelect && (
+              <Select
+                style={{ minWidth: 260 }}
+                placeholder="Select a meeting"
+                value={meetingId}
+                onChange={(val) => setMeetingId(val)}
+                options={(meetings || []).map((m) => ({
+                  label: `${m.summary} — ${m.start_time}`,
+                  value: m.id,
+                }))}
+              />
+            )}
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <Button
+              onClick={async () => {
+                await fetchMeetings();
+                setShowMeetingSelect(true);
+              }}
+            >
+              Check meetings
+            </Button>
+            <Button
+              type="primary"
+              disabled={
+                usersSelectedRowKeys.length === 0 || !meetingId || sending
+              }
+              loading={sending}
+              onClick={async () => {
+                await sendUsersEmailRoom(meetingId, usersSelectedRowKeys);
+              }}
+            >
+              Send room
+            </Button>
+          </div>
+        </div>
+        <Table
+          columns={[
+            {
+              title: "#",
+              key: "order",
+              width: 70,
+              render: (_t, _r, i) => i + 1,
+            },
+            { title: "Name", dataIndex: "name", key: "name" },
+            { title: "Email", dataIndex: "email", key: "email" },
+            { title: "Role", dataIndex: "role", key: "role" },
+          ]}
+          dataSource={(courseUsers || []).map((u) => ({ key: u.id, ...u }))}
+          rowSelection={{
+            selectedRowKeys: usersSelectedRowKeys,
+            onChange: (keys) => setUsersSelectedRowKeys(keys),
+          }}
+          pagination={{
+            current: courseUsersPagination?.current_page || usersPage,
+            total: courseUsersPagination?.total || 0,
+            pageSize: courseUsersPagination?.per_page || usersPerPage,
+            showSizeChanger: true,
+            onChange: async (p, ps) => {
+              setUsersPage(p);
+              setUsersPerPage(ps);
+              if (usersCourseId) await fetchCourseUsers(usersCourseId, p, ps);
+            },
+          }}
+          bordered
+        />
+      </Modal>
 
       <Modal
         title={editingCourse ? "Edit Course" : "Add Course"}

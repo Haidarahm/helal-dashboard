@@ -12,6 +12,7 @@ import News from "./pages/News";
 import LiveVideo from "./pages/LiveVideo";
 import CourseVideos from "./pages/CourseVideos";
 import { Users } from "./pages/Users";
+import { Consultations } from "./pages/Consultations";
 import Meetings from "./pages/Meetings";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
@@ -54,6 +55,10 @@ const router = createBrowserRouter([
       {
         path: "users",
         element: <Users />,
+      },
+      {
+        path: "consultations",
+        element: <Consultations />,
       },
       {
         path: "meetings",
