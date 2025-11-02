@@ -141,6 +141,7 @@ export default function CourseVideos({ id }) {
 
   const handleOk = async () => {
     const values = await form.validateFields();
+    const isEditing = !!editing;
     const payload = {
       ...values,
       path: values.path || null,
@@ -150,12 +151,22 @@ export default function CourseVideos({ id }) {
     const hasYoutube = !!(
       payload.youtube_path && String(payload.youtube_path).trim()
     );
-    if ((hasFile && hasYoutube) || (!hasFile && !hasYoutube)) {
-      message.error("Provide either a YouTube link or an MP4 file (not both)");
-      return;
+    if (!isEditing) {
+      if ((hasFile && hasYoutube) || (!hasFile && !hasYoutube)) {
+        message.error(
+          "Provide either a YouTube link or an MP4 file (not both)"
+        );
+        return;
+      }
+    }
+    // Ensure mutually exclusive send
+    if (hasFile) {
+      payload.youtube_path = undefined;
+    } else if (hasYoutube) {
+      payload.path = null;
     }
     try {
-      if (editing) {
+      if (isEditing) {
         await updateVideo(editing.id, payload);
       } else {
         await createVideo(payload);
@@ -284,7 +295,7 @@ export default function CourseVideos({ id }) {
           <Form.Item
             label="Course ID"
             name="course_id"
-            rules={[{ required: true, message: "Required" }]}
+            rules={editing ? [] : [{ required: true, message: "Required" }]}
           >
             <Input disabled value={effectiveId} />
           </Form.Item>
@@ -296,7 +307,7 @@ export default function CourseVideos({ id }) {
           <Form.Item
             label="Title (EN)"
             name="title_en"
-            rules={[{ required: true, message: "Required" }]}
+            rules={editing ? [] : [{ required: true, message: "Required" }]}
           >
             <Input />
           </Form.Item>
@@ -323,11 +334,7 @@ export default function CourseVideos({ id }) {
             name="path"
             valuePropName="file"
             getValueFromEvent={extractFile}
-            rules={
-              editing
-                ? []
-                : [{ required: true, message: "Please select an MP4 video" }]
-            }
+            rules={[]}
           >
             <Upload
               beforeUpload={beforeUploadVideo}

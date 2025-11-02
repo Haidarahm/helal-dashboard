@@ -14,7 +14,9 @@ function buildVideoFormData(fields) {
     ["description_ar", fields.description_ar],
   ];
   for (const [key, value] of entries) {
-    if (value !== undefined && value !== null) formData.append(key, value);
+    if (value === undefined || value === null) continue;
+    if (typeof value === "string" && value.trim() === "") continue;
+    formData.append(key, value);
   }
   // Files: path (video file) and cover (image)
   if (fields.path) formData.append("path", fields.path);
