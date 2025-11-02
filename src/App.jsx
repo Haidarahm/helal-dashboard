@@ -6,7 +6,6 @@ import {
 import { ToastContainer } from "react-toastify";
 import AuthGate from "./components/AuthGate";
 import DashboardLayout from "./components/DashboardLayout";
-import DashboardHome from "./pages/DashboardHome";
 import Courses from "./pages/Courses";
 import News from "./pages/News";
 import LiveVideo from "./pages/LiveVideo";
@@ -32,10 +31,6 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      {
-        index: true,
-        element: <DashboardHome />,
-      },
       {
         path: "courses",
         element: <Courses />,

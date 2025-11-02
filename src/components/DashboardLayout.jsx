@@ -5,7 +5,6 @@ import { toast } from "react-toastify";
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  DashboardOutlined,
   UserOutlined,
   SettingOutlined,
   LogoutOutlined,
@@ -34,12 +33,6 @@ const DashboardLayout = () => {
   const { clearToken } = useAuthContext();
 
   const menuItems = [
-    {
-      key: "/dashboard",
-      icon: <DashboardOutlined />,
-      label: "Dashboard",
-      onClick: () => navigate("/dashboard"),
-    },
     {
       key: "/dashboard/courses",
       icon: <BookOutlined />,
@@ -75,12 +68,6 @@ const DashboardLayout = () => {
       icon: <UserOutlined />,
       label: "Users",
       onClick: () => navigate("/dashboard/users"),
-    },
-    {
-      key: "/dashboard/settings",
-      icon: <SettingOutlined />,
-      label: "Settings",
-      onClick: () => navigate("/dashboard/settings"),
     },
   ];
 

@@ -7,7 +7,6 @@ import {
   FiVideoOff,
   FiXCircle,
 } from "react-icons/fi";
-import Pusher from "pusher-js";
 
 const VideoControls = ({
   isMicOn,
@@ -78,11 +77,9 @@ export const LiveVideo = () => {
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [pusherConnected, setPusherConnected] = useState(false);
+
   const videoRef = useRef(null);
   const mediaStreamRef = useRef(null);
-  const pusherRef = useRef(null);
-  const channelRef = useRef(null);
 
   // Assign stream to video element after broadcast starts (fixes timing issues)
   useEffect(() => {
@@ -91,40 +88,7 @@ export const LiveVideo = () => {
     }
   }, [isBroadcasting]);
 
-  // Setup Pusher on broadcast start (signaling/demo only)
-  useEffect(() => {
-    if (isBroadcasting && roomId) {
-      const pusherKey = import.meta.env.VITE_PUSHER_KEY;
-      const pusherCluster = import.meta.env.VITE_PUSHER_CLUSTER;
-      if (!pusherKey || !pusherCluster) {
-        setError("Pusher key/cluster missing in environment config.");
-        return;
-      }
-      Pusher.logToConsole = true;
-      const pusher = new Pusher(pusherKey, {
-        cluster: pusherCluster,
-        forceTLS: true,
-      });
-      pusherRef.current = pusher;
-      const channel = pusher.subscribe(roomId);
-      channelRef.current = channel;
-      channel.bind_global((event, data) => {
-        console.log(`[Pusher][${roomId}] Event:`, event, data);
-      });
-      channel.bind("signal", (data) => {
-        console.log(`[Pusher][${roomId}] SIGNAL`, data);
-      });
-      setPusherConnected(true);
-      return () => {
-        channel.unbind_all();
-        channel.unsubscribe();
-        pusher.disconnect();
-        pusherRef.current = null;
-        channelRef.current = null;
-        setPusherConnected(false);
-      };
-    }
-  }, [isBroadcasting, roomId]);
+  // Pusher removed
 
   const handleStartBroadcast = async () => {
     setIsLoading(true);
@@ -167,17 +131,7 @@ export const LiveVideo = () => {
       mediaStreamRef.current.getTracks().forEach((track) => track.stop());
       mediaStreamRef.current = null;
     }
-    // Disconnect Pusher
-    if (channelRef.current) {
-      channelRef.current.unbind_all();
-      channelRef.current.unsubscribe();
-      channelRef.current = null;
-    }
-    if (pusherRef.current) {
-      pusherRef.current.disconnect();
-      pusherRef.current = null;
-    }
-    setPusherConnected(false);
+    // Pusher removed
     // Reset broadcast state
     setIsBroadcasting(false);
     setIsMicOn(true);
@@ -226,11 +180,7 @@ export const LiveVideo = () => {
         >
           Admin Live Video Broadcast
         </h2>
-        {pusherConnected && (
-          <div style={{ fontSize: 14, color: "#339966", marginBottom: 8 }}>
-            Pusher connected: <b>{roomId}</b>
-          </div>
-        )}
+
         {!isBroadcasting && (
           <div style={{ marginBottom: 22 }}>
             <label

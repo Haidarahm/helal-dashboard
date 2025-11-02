@@ -104,7 +104,7 @@ export const Consultations = () => {
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center  justify-between mb-4">
           <Title level={2} className="!mb-0">
             Consultations
           </Title>
@@ -118,6 +118,7 @@ export const Consultations = () => {
           <Empty description="No consultations found" />
         ) : (
           <Table
+          className="w-full"
             columns={columns}
             dataSource={dataSource}
             pagination={{
