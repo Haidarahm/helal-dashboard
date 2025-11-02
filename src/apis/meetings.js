@@ -6,6 +6,14 @@ export const meetingsApi = {
     const response = await axiosInstance.get("/api/admin/meetings");
     return response.data;
   },
+  // Send emails to selected users for a specific meeting
+  sendUsersEmailRoom: async (meetingId, user_ids) => {
+    const response = await axiosInstance.post(
+      `/api/admin/send-meet-emails/${meetingId}`,
+      { user_ids }
+    );
+    return response.data;
+  },
 };
 
 export default meetingsApi;

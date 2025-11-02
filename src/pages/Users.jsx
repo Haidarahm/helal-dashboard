@@ -1,13 +1,19 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Table, Tag, Typography, Spin, Empty } from "antd";
+import { Table, Tag, Typography, Spin, Empty, Button, Select } from "antd";
 import useUsersStore from "../store/usersStore";
+import useMeetingsStore from "../store/meetingsStore";
 
 const { Title } = Typography;
 
 export const Users = () => {
   const { users, pagination, loading, fetchUsers } = useUsersStore();
+  const { meetings, fetchMeetings, sendUsersEmailRoom, sending } =
+    useMeetingsStore();
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [meetingId, setMeetingId] = useState(null);
+  const [showMeetingSelect, setShowMeetingSelect] = useState(false);
 
   useEffect(() => {
     fetchUsers(page, perPage);
@@ -48,6 +54,38 @@ export const Users = () => {
           <Title level={2} className="!mb-0">
             Users
           </Title>
+          <div className="flex items-center gap-2">
+            {showMeetingSelect && (
+              <Select
+                style={{ minWidth: 260 }}
+                placeholder="Select a meeting"
+                value={meetingId}
+                onChange={(val) => setMeetingId(val)}
+                options={(meetings || []).map((m) => ({
+                  label: `${m.summary} — ${m.start_time}`,
+                  value: m.id,
+                }))}
+              />
+            )}
+            <Button
+              onClick={async () => {
+                await fetchMeetings();
+                setShowMeetingSelect(true);
+              }}
+            >
+              Check meetings
+            </Button>
+            <Button
+              type="primary"
+              disabled={selectedRowKeys.length === 0 || !meetingId || sending}
+              loading={sending}
+              onClick={async () => {
+                await sendUsersEmailRoom(meetingId, selectedRowKeys);
+              }}
+            >
+              Send room
+            </Button>
+          </div>
         </div>
 
         {loading ? (
@@ -60,7 +98,10 @@ export const Users = () => {
           <Table
             columns={columns}
             dataSource={dataSource}
-            rowSelection={{}}
+            rowSelection={{
+              selectedRowKeys,
+              onChange: (keys) => setSelectedRowKeys(keys),
+            }}
             pagination={{
               current: pagination.current_page,
               total: pagination.total,
