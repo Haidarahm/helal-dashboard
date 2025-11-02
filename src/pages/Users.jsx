@@ -19,7 +19,12 @@ export const Users = () => {
   );
 
   const columns = [
-    { title: "ID", dataIndex: "id", key: "id", width: 80 },
+    {
+      title: "#",
+      key: "order",
+      width: 70,
+      render: (_text, _record, index) => index + 1,
+    },
     { title: "Name", dataIndex: "name", key: "name" },
     { title: "Email", dataIndex: "email", key: "email" },
     { title: "Role", dataIndex: "role", key: "role" },
@@ -55,6 +60,7 @@ export const Users = () => {
           <Table
             columns={columns}
             dataSource={dataSource}
+            rowSelection={{}}
             pagination={{
               current: pagination.current_page,
               total: pagination.total,

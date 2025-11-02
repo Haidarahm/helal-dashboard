@@ -41,7 +41,6 @@ const Meetings = () => {
         </a>
       ),
     },
-    { title: "Created", dataIndex: "created_at", key: "created_at" },
     {
       title: "Action",
       key: "action",
