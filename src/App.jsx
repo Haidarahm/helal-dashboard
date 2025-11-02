@@ -12,6 +12,7 @@ import News from "./pages/News";
 import LiveVideo from "./pages/LiveVideo";
 import CourseVideos from "./pages/CourseVideos";
 import { Users } from "./pages/Users";
+import Meetings from "./pages/Meetings";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import "antd/dist/reset.css";
@@ -53,6 +54,10 @@ const router = createBrowserRouter([
       {
         path: "users",
         element: <Users />,
+      },
+      {
+        path: "meetings",
+        element: <Meetings />,
       },
     ],
   },
