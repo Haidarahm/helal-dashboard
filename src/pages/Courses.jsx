@@ -25,6 +25,7 @@ import {
   DeleteOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
+import { FiUsers, FiVideo, FiEdit2, FiTrash2 } from "react-icons/fi";
 import useCoursesStore from "../store/coursesStore";
 import useMeetingsStore from "../store/meetingsStore";
 import { coursesApi } from "../apis/courses";
@@ -289,9 +290,8 @@ const Courses = () => {
                       await fetchCourseUsers(item.id, 1, 5);
                       setUsersModalOpen(true);
                     }}
-                  >
-                    Users
-                  </Button>,
+                    icon={<FiUsers />}
+                  />,
                   <Button
                     type="text"
                     key="videos"
@@ -299,18 +299,15 @@ const Courses = () => {
                     onClick={() =>
                       navigate(`/dashboard/courses/${item.id}/videos`)
                     }
-                  >
-                    Videos
-                  </Button>,
+                    icon={<FiVideo />}
+                  />,
                   <Button
                     type="text"
-                    icon={<EditOutlined />}
+                    icon={<FiEdit2 />}
                     key="edit"
                     className="text-blue-600"
                     onClick={() => handleEditCourse(item)}
-                  >
-                    Edit
-                  </Button>,
+                  />,
                   <Popconfirm
                     title="Delete Course"
                     description="Are you sure you want to delete this course?"
@@ -321,12 +318,10 @@ const Courses = () => {
                   >
                     <Button
                       type="text"
-                      icon={<DeleteOutlined />}
+                      icon={<FiTrash2 />}
                       key="delete"
                       danger
-                    >
-                      Delete
-                    </Button>
+                    />
                   </Popconfirm>,
                 ]}
               >

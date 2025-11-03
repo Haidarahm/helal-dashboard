@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Table,
   Button,
@@ -30,10 +30,20 @@ export const Consultations = () => {
   const [open, setOpen] = useState(false);
   const [currentRow, setCurrentRow] = useState(null);
   const [form] = Form.useForm();
+  const containerRef = useRef(null);
+  const [tableKey, setTableKey] = useState(0);
 
   useEffect(() => {
     fetchConsultations(page, perPage);
   }, [page, perPage]);
+
+  // Re-render table when container size changes (e.g., sidebar open/close)
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const ro = new ResizeObserver(() => setTableKey((k) => k + 1));
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
 
   const dataSource = useMemo(
     () => (consultations || []).map((c) => ({ key: c.id, ...c })),
@@ -117,22 +127,28 @@ export const Consultations = () => {
         ) : dataSource.length === 0 ? (
           <Empty description="No consultations found" />
         ) : (
-          <Table
-          className="w-full"
-            columns={columns}
-            dataSource={dataSource}
-            pagination={{
-              current: pagination?.current_page || page,
-              total: pagination?.total || dataSource.length,
-              pageSize: pagination?.per_page || perPage,
-              showSizeChanger: true,
-              onChange: (p, ps) => {
-                setPage(p);
-                setPerPage(ps);
-              },
-            }}
-            bordered
-          />
+          <div ref={containerRef} style={{ width: "100%" }}>
+            <Table
+              key={tableKey}
+              className="w-full"
+              columns={columns}
+              dataSource={dataSource}
+              style={{ width: "100%" }}
+              tableLayout="fixed"
+              scroll={{ x: "max-content" }}
+              pagination={{
+                current: pagination?.current_page || page,
+                total: pagination?.total || dataSource.length,
+                pageSize: pagination?.per_page || perPage,
+                showSizeChanger: true,
+                onChange: (p, ps) => {
+                  setPage(p);
+                  setPerPage(ps);
+                },
+              }}
+              bordered
+            />
+          </div>
         )}
       </div>
 
