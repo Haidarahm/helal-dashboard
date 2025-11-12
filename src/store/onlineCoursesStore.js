@@ -187,6 +187,21 @@ const useOnlineCoursesStore = create((set, get) => ({
     total: 0,
   },
   courseUsersLoading: false,
+  currentCourseId: null, // Track current course ID to detect changes
+
+  // Clear course users data
+  clearCourseUsers: () => {
+    set({
+      courseUsers: [],
+      courseUsersPagination: {
+        current_page: 1,
+        last_page: 1,
+        per_page: 5,
+        total: 0,
+      },
+      currentCourseId: null,
+    });
+  },
 
   // Get users enrolled in an online course
   getOnlineCoursesUsers: async ({
@@ -194,7 +209,26 @@ const useOnlineCoursesStore = create((set, get) => ({
     per_page = 5,
     course_online_id,
   }) => {
-    set({ courseUsersLoading: true, error: null });
+    const { currentCourseId } = get();
+
+    // Clear old data if course ID has changed
+    if (currentCourseId !== course_online_id) {
+      set({
+        courseUsers: [],
+        courseUsersPagination: {
+          current_page: 1,
+          last_page: 1,
+          per_page: 5,
+          total: 0,
+        },
+        currentCourseId: course_online_id,
+        courseUsersLoading: true,
+        error: null,
+      });
+    } else {
+      set({ courseUsersLoading: true, error: null });
+    }
+
     try {
       const resp = await onlineCoursesApi.getOnlineCoursesUsers({
         page,
@@ -213,13 +247,14 @@ const useOnlineCoursesStore = create((set, get) => ({
           courseUsersLoading: false,
           courseUsers: users,
           courseUsersPagination: pagination,
+          currentCourseId: course_online_id,
           error: null,
         });
         return { success: true, data: resp };
       }
       const msg = resp?.message || "Failed to fetch course users";
       set({ courseUsersLoading: false, error: msg });
-      toast.error(msg);
+      
       return { success: false, error: msg };
     } catch (error) {
       const errorMessage =
@@ -228,7 +263,7 @@ const useOnlineCoursesStore = create((set, get) => ({
         error?.message ||
         "Failed to fetch course users";
       set({ courseUsersLoading: false, error: errorMessage });
-      toast.error(errorMessage);
+ 
       return { success: false, error: errorMessage };
     }
   },

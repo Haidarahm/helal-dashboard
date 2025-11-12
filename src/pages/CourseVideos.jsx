@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import useVideosStore from "../store/videosStore";
 import {
@@ -14,6 +14,8 @@ import {
   message,
   Progress,
   Popconfirm,
+  Spin,
+  Empty,
 } from "antd";
 import { FiPlay } from "react-icons/fi";
 
@@ -48,6 +50,7 @@ export default function CourseVideos({ id }) {
     createVideo,
     updateVideo,
     deleteVideo,
+    clearCourseVideos,
   } = useVideosStore();
   const uploadProgress = useVideosStore((s) => s.uploadProgress);
 
@@ -58,6 +61,8 @@ export default function CourseVideos({ id }) {
   const [editing, setEditing] = useState(null);
   const [form] = Form.useForm();
   const [playItem, setPlayItem] = useState(null);
+  const videoRef = useRef(null);
+  const iframeRef = useRef(null);
 
   // Watch mutually exclusive fields
   const watchedYoutube = Form.useWatch("youtube_path", form);
@@ -86,8 +91,12 @@ export default function CourseVideos({ id }) {
   };
 
   useEffect(() => {
-    if (effectiveId)
+    if (effectiveId) {
       fetchCourseVideos(effectiveId, { lang, page, per_page: perPage });
+    } else {
+      // Clear videos if no course ID
+      clearCourseVideos();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveId, page, perPage, lang]);
 
@@ -97,6 +106,7 @@ export default function CourseVideos({ id }) {
       form.setFieldsValue({ course_id: effectiveId });
     }
   }, [isModalOpen, effectiveId, form]);
+
 
   const list = useMemo(() => videos || [], [videos]);
 
@@ -181,6 +191,29 @@ export default function CourseVideos({ id }) {
     await deleteVideo(idToDelete);
   };
 
+  const handleCloseVideoModal = () => {
+    // Stop video immediately when closing (before modal closes)
+    // This ensures video stops playing before the modal animation
+    if (videoRef.current) {
+      try {
+        videoRef.current.pause();
+        videoRef.current.currentTime = 0;
+      } catch (e) {
+        // Ignore errors - element might be destroyed
+      }
+    }
+    // Clear iframe src to stop YouTube video
+    // Setting src to "about:blank" stops the YouTube player immediately
+    if (iframeRef.current) {
+      try {
+        iframeRef.current.src = "about:blank";
+      } catch (e) {
+        // Ignore errors - element might be destroyed
+      }
+    }
+    setPlayItem(null);
+  };
+
   return (
     <div>
       <div
@@ -197,79 +230,98 @@ export default function CourseVideos({ id }) {
         </Button>
       </div>
 
-      <Row gutter={[16, 16]}>
-        {list.map((v) => (
-          <Col xs={24} sm={12} md={8} lg={6} key={v.id}>
-            <Card
-              cover={
-                v.cover ? (
-                  <img
-                    alt={v.title || v.title_en || "video"}
-                    src={resolveUrl(v.cover)}
-                    style={{ height: 160, objectFit: "cover" }}
-                  />
-                ) : null
-              }
-              actions={[
-                <Button key="play" type="link" onClick={() => setPlayItem(v)}>
-                  <FiPlay style={{ marginRight: 6 }} /> Play
-                </Button>,
-                <Button key="edit" type="link" onClick={() => openEdit(v)}>
-                  Edit
-                </Button>,
-                <Popconfirm
-                  key="delete"
-                  title="Delete Video"
-                  description="Are you sure you want to delete this video?"
-                  okText="Yes"
-                  cancelText="No"
-                  okButtonProps={{ danger: true }}
-                  onConfirm={() => handleDelete(v.id)}
-                >
-                  <Button type="link" danger>
-                    Delete
-                  </Button>
-                </Popconfirm>,
-              ]}
-              loading={loading}
-            >
-              <Card.Meta
-                title={v.title || v.title_en || "Untitled"}
-                description={
-                  <div style={{ fontSize: 12 }}>
-                    {v.subTitle || v.subTitle_en}
-                    <div
-                      style={{
-                        color: "#777",
-                        marginTop: 6,
-                        maxHeight: 40,
-                        overflow: "hidden",
-                      }}
-                    >
-                      {v.description || v.description_en}
-                    </div>
-                  </div>
-                }
-              />
-            </Card>
-          </Col>
-        ))}
-      </Row>
-
-      <div
-        style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}
-      >
-        <Pagination
-          current={pagination.current_page}
-          total={pagination.total}
-          pageSize={pagination.per_page}
-          onChange={(p, ps) => {
-            setPage(p);
-            setPerPage(ps);
+      {loading && list.length === 0 ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: 300,
           }}
-          showSizeChanger
+        >
+          <Spin size="large" />
+        </div>
+      ) : list.length === 0 ? (
+        <Empty
+          description="No videos found for this course"
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
-      </div>
+      ) : (
+        <Row gutter={[16, 16]}>
+          {list.map((v) => (
+            <Col xs={24} sm={12} md={8} lg={6} key={v.id}>
+              <Card
+                cover={
+                  v.cover ? (
+                    <img
+                      alt={v.title || v.title_en || "video"}
+                      src={resolveUrl(v.cover)}
+                      style={{ height: 160, objectFit: "cover" }}
+                    />
+                  ) : null
+                }
+                actions={[
+                  <Button key="play" type="link" onClick={() => setPlayItem(v)}>
+                    <FiPlay style={{ marginRight: 6 }} /> Play
+                  </Button>,
+                  <Button key="edit" type="link" onClick={() => openEdit(v)}>
+                    Edit
+                  </Button>,
+                  <Popconfirm
+                    key="delete"
+                    title="Delete Video"
+                    description="Are you sure you want to delete this video?"
+                    okText="Yes"
+                    cancelText="No"
+                    okButtonProps={{ danger: true }}
+                    onConfirm={() => handleDelete(v.id)}
+                  >
+                    <Button type="link" danger>
+                      Delete
+                    </Button>
+                  </Popconfirm>,
+                ]}
+              >
+                <Card.Meta
+                  title={v.title || v.title_en || "Untitled"}
+                  description={
+                    <div style={{ fontSize: 12 }}>
+                      {v.subTitle || v.subTitle_en}
+                      <div
+                        style={{
+                          color: "#777",
+                          marginTop: 6,
+                          maxHeight: 40,
+                          overflow: "hidden",
+                        }}
+                      >
+                        {v.description || v.description_en}
+                      </div>
+                    </div>
+                  }
+                />
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      )}
+
+      {!loading && list.length > 0 && (
+        <div
+          style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}
+        >
+          <Pagination
+            current={pagination.current_page}
+            total={pagination.total}
+            pageSize={pagination.per_page}
+            onChange={(p, ps) => {
+              setPage(p);
+              setPerPage(ps);
+            }}
+            showSizeChanger
+          />
+        </div>
+      )}
 
       <Modal
         title={editing ? "Update Video" : "Add Video"}
@@ -292,8 +344,6 @@ export default function CourseVideos({ id }) {
           layout="vertical"
           initialValues={{ ...initialForm, course_id: effectiveId }}
         >
-    
-
           <Form.Item label="YouTube Path" name="youtube_path">
             <Input placeholder="youtube url or id" disabled={!!watchedFile} />
           </Form.Item>
@@ -365,14 +415,17 @@ export default function CourseVideos({ id }) {
             : "Preview"
         }
         open={!!playItem}
-        onCancel={() => setPlayItem(null)}
+        onCancel={handleCloseVideoModal}
         footer={null}
         width={800}
+        destroyOnClose
       >
         {playItem &&
           (playItem.youtube_path ? (
             <div style={{ position: "relative", paddingTop: "56.25%" }}>
               <iframe
+                ref={iframeRef}
+                key={playItem.id}
                 title="youtube-player"
                 src={getYouTubeEmbedUrl(playItem.youtube_path)}
                 style={{
@@ -389,11 +442,20 @@ export default function CourseVideos({ id }) {
             </div>
           ) : (
             <video
+              ref={videoRef}
               key={playItem.id}
               src={resolveUrl(playItem.path)}
               style={{ width: "100%" }}
               controls
               autoPlay
+              onLoadedMetadata={() => {
+                // Ensure video is ready before playing
+                if (videoRef.current) {
+                  videoRef.current.play().catch((e) => {
+                    console.log("Autoplay prevented:", e);
+                  });
+                }
+              }}
             />
           ))}
       </Modal>

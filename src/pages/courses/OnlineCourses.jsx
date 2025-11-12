@@ -41,6 +41,7 @@ const OnlineCourses = () => {
     courseUsersPagination,
     courseUsersLoading,
     getOnlineCoursesUsers,
+    clearCourseUsers,
   } = useOnlineCoursesStore();
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(5);
@@ -134,6 +135,7 @@ const OnlineCourses = () => {
     setUsersPage(1);
     setUsersPerPage(5);
     setUsersModalOpen(true);
+    // Store will automatically clear old data if course ID has changed
     await getOnlineCoursesUsers({
       course_online_id: courseId,
       page: 1,
@@ -668,6 +670,11 @@ const OnlineCourses = () => {
         title="Enrolled Users"
         open={usersModalOpen}
         onCancel={() => setUsersModalOpen(false)}
+        afterClose={() => {
+          // Clear users data when modal closes to prevent stale data
+          clearCourseUsers();
+          setUsersCourseId(null);
+        }}
         footer={null}
         width={720}
         destroyOnClose

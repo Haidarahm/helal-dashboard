@@ -16,17 +16,51 @@ const useVideosStore = create((set, get) => ({
   language: "en",
   currentCourseId: null,
 
+  // Clear course videos
+  clearCourseVideos: () => {
+    set({
+      videos: [],
+      pagination: {
+        current_page: 1,
+        last_page: 1,
+        per_page: 10,
+        total: 0,
+      },
+      currentCourseId: null,
+    });
+  },
+
   // List videos for a course
   fetchCourseVideos: async (
     courseId,
     { lang = "en", page = 1, per_page = 10 } = {}
   ) => {
-    set({
-      loading: true,
-      error: null,
-      language: lang,
-      currentCourseId: courseId,
-    });
+    const { currentCourseId } = get();
+
+    // Clear old data if course ID has changed
+    if (currentCourseId !== courseId && currentCourseId !== null) {
+      set({
+        videos: [],
+        pagination: {
+          current_page: 1,
+          last_page: 1,
+          per_page: 10,
+          total: 0,
+        },
+        loading: true,
+        error: null,
+        language: lang,
+        currentCourseId: courseId,
+      });
+    } else {
+      set({
+        loading: true,
+        error: null,
+        language: lang,
+        currentCourseId: courseId,
+      });
+    }
+
     try {
       const response = await videosApi.listByCourse(courseId, {
         lang,
@@ -52,6 +86,7 @@ const useVideosStore = create((set, get) => ({
           videos: list,
           pagination: normalizedPagination,
           error: null,
+          currentCourseId: courseId,
         });
         return { success: true, data: response };
       }
