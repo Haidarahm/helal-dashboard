@@ -41,7 +41,56 @@ const useUsersStore = create((set) => ({
         error?.message ||
         "Failed to fetch users";
       set({ loading: false, error: errorMessage });
-      
+
+      return { success: false, error: errorMessage };
+    }
+  },
+
+  searchUsers: async (search) => {
+    if (!search || search.trim() === "") {
+      // If search is empty, return empty results or fetch all users
+      set({
+        loading: false,
+        users: [],
+        pagination: {
+          current_page: 1,
+          last_page: 1,
+          per_page: 10,
+          total: 0,
+        },
+        error: null,
+      });
+      return { success: true, data: { data: [], pagination: {} } };
+    }
+
+    set({ loading: true, error: null });
+    try {
+      const response = await usersApi.searchUsers(search.trim());
+      if (response?.status) {
+        set({
+          loading: false,
+          users: response.data || [],
+          pagination: response.pagination || {
+            current_page: 1,
+            last_page: 1,
+            per_page: 10,
+            total: Array.isArray(response.data) ? response.data.length : 0,
+          },
+          error: null,
+        });
+        return { success: true, data: response };
+      }
+      const msg = "Failed to search users";
+      set({ loading: false, error: msg });
+      return { success: false, error: msg };
+    } catch (error) {
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        "Failed to search users";
+      set({ loading: false, error: errorMessage });
+
       return { success: false, error: errorMessage };
     }
   },

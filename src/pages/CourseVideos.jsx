@@ -153,9 +153,27 @@ export default function CourseVideos({ id }) {
     const isEditing = !!editing;
     const payload = {
       ...values,
+      // Ensure course_id is always included - use nullish coalescing to handle 0 as valid ID
+      course_id: values.course_id ?? effectiveId,
       path: values.path || null,
       cover: values.cover || null,
     };
+
+    // Final check: ensure course_id is present (can be 0, but not undefined/null/empty string)
+    if (
+      payload.course_id === undefined ||
+      payload.course_id === null ||
+      payload.course_id === ""
+    ) {
+      // Try to get from effectiveId as last resort
+      if (effectiveId) {
+        payload.course_id = effectiveId;
+      } else {
+        message.error("Course ID is required");
+        return;
+      }
+    }
+
     const hasFile = !!payload.path;
     const hasYoutube = !!(
       payload.youtube_path && String(payload.youtube_path).trim()
@@ -343,6 +361,11 @@ export default function CourseVideos({ id }) {
           layout="vertical"
           initialValues={{ ...initialForm, course_id: effectiveId }}
         >
+          {/* Hidden field to ensure course_id is included in form values */}
+          <Form.Item name="course_id" hidden>
+            <Input type="hidden" />
+          </Form.Item>
+
           <Form.Item label="YouTube Path" name="youtube_path">
             <Input placeholder="youtube url or id" disabled={!!watchedFile} />
           </Form.Item>

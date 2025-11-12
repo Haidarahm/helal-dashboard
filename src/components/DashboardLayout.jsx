@@ -15,6 +15,7 @@ import {
 } from "@ant-design/icons";
 import { PhoneOutlined } from "@ant-design/icons";
 import { CalendarOutlined } from "@ant-design/icons";
+import { ClockCircleOutlined } from "@ant-design/icons";
 import { FiVideo } from "react-icons/fi";
 import StartMeetingModal from "./StartMeetingModal";
 import useAuthStore from "../store/authStore";
@@ -67,6 +68,12 @@ const DashboardLayout = () => {
       icon: <CalendarOutlined />,
       label: "Meetings",
       onClick: () => navigate("/dashboard/meetings"),
+    },
+    {
+      key: "/dashboard/availability",
+      icon: <ClockCircleOutlined />,
+      label: "Availability",
+      onClick: () => navigate("/dashboard/availability"),
     },
     {
       key: "/dashboard/consultations",

@@ -8,6 +8,14 @@ export const usersApi = {
     });
     return response.data;
   },
+
+  // Search users by name or email
+  searchUsers: async (search) => {
+    const response = await axiosInstance.get("/admin/users/by-name-email", {
+      params: { search },
+    });
+    return response.data;
+  },
 };
 
 export default usersApi;

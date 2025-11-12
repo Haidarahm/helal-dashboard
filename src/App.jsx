@@ -14,6 +14,7 @@ import CourseVideos from "./pages/CourseVideos";
 import { Users } from "./pages/Users";
 import { Consultations } from "./pages/Consultations";
 import Meetings from "./pages/Meetings";
+import Availability from "./pages/Availability";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import "antd/dist/reset.css";
@@ -63,6 +64,10 @@ const router = createBrowserRouter([
       {
         path: "meetings",
         element: <Meetings />,
+      },
+      {
+        path: "availability",
+        element: <Availability />,
       },
     ],
   },
