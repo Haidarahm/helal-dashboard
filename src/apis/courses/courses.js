@@ -59,7 +59,7 @@ export const coursesApi = {
   },
 
   // Get users of a course (with pagination)
-  getCoursesUsers: async ({ page = 1, per_page = 10, course_id }) => {
+  getCoursesUsers: async ({ page = 1, per_page = 5, course_id }) => {
     const response = await axiosInstance.get("/admin/users", {
       params: { page, per_page, course_id },
     });

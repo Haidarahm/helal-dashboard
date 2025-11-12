@@ -70,6 +70,12 @@ export const onlineCoursesApi = {
     });
     return response.data;
   },
+  getOnlineCoursesUsers: async ({ page = 1, per_page = 5, course_online_id }) => {
+    const response = await axiosInstance.get("/admin/users", {
+      params: { page, per_page, course_online_id },
+    });
+    return response.data;
+  },
 };
 
 export default onlineCoursesApi;

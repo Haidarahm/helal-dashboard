@@ -13,7 +13,7 @@ const useUsersStore = create((set) => ({
     total: 0,
   },
 
-  fetchUsers: async (page = 1, per_page = 10) => {
+  fetchUsers: async (page = 1, per_page = 5) => {
     set({ loading: true, error: null });
     try {
       const response = await usersApi.getAllUsers(page, per_page);

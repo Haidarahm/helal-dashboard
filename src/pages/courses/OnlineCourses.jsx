@@ -17,9 +17,10 @@ import {
   Col,
   InputNumber,
   message,
+  Tooltip,
 } from "antd";
 import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
-import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import { FiEdit2, FiTrash2, FiLink } from "react-icons/fi";
 import dayjs from "dayjs";
 import useOnlineCoursesStore from "../../store/onlineCoursesStore";
 
@@ -35,6 +36,7 @@ const OnlineCourses = () => {
     createOnlineCourse,
     updateOnlineCourse,
     deleteOnlineCourse,
+    sendMeetingUrl,
   } = useOnlineCoursesStore();
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(5);
@@ -43,6 +45,9 @@ const OnlineCourses = () => {
   const [editingCourse, setEditingCourse] = useState(null);
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
+  const [sendLinkModalOpen, setSendLinkModalOpen] = useState(false);
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const [meetUrl, setMeetUrl] = useState("");
 
   useEffect(() => {
     fetchOnlineCourses({ lang, page, per_page: perPage });
@@ -87,6 +92,33 @@ const OnlineCourses = () => {
     if (result.success) {
       // List will be refreshed automatically
     }
+  };
+
+  const handleOpenSendLink = (courseId) => {
+    setSelectedCourseId(courseId);
+    setMeetUrl("");
+    setSendLinkModalOpen(true);
+  };
+
+  const handleSendLink = async () => {
+    if (!meetUrl || !meetUrl.trim()) {
+      message.error("Please enter a meeting URL");
+      return;
+    }
+    const result = await sendMeetingUrl(selectedCourseId, meetUrl.trim());
+    if (result.success) {
+      setSendLinkModalOpen(false);
+      setSelectedCourseId(null);
+      setMeetUrl("");
+      // Refresh the list to show updated meet_url
+      await fetchOnlineCourses({ lang, page, per_page: perPage });
+    }
+  };
+
+  const handleCancelSendLink = () => {
+    setSendLinkModalOpen(false);
+    setSelectedCourseId(null);
+    setMeetUrl("");
   };
 
   const handleCancel = () => {
@@ -271,9 +303,17 @@ const OnlineCourses = () => {
     {
       title: "Action",
       key: "action",
-      width: 120,
+      width: 180,
       render: (_, record) => (
         <div style={{ display: "flex", gap: 8 }}>
+          <Tooltip title="Send link">
+            <Button
+              type="text"
+              icon={<FiLink />}
+              className="text-green-600"
+              onClick={() => handleOpenSendLink(record.id)}
+            />
+          </Tooltip>
           <Button
             type="text"
             icon={<FiEdit2 />}
@@ -573,6 +613,27 @@ const OnlineCourses = () => {
             </Text>
           </Form.Item>
         </Form>
+      </Modal>
+
+      <Modal
+        title="Send Meeting Link"
+        open={sendLinkModalOpen}
+        onCancel={handleCancelSendLink}
+        onOk={handleSendLink}
+        okText="Send"
+        okButtonProps={{ loading: loading }}
+      >
+        <div style={{ marginTop: 16 }}>
+          <Text strong style={{ display: "block", marginBottom: 8 }}>
+            Meeting URL:
+          </Text>
+          <Input
+            placeholder="Enter meeting URL (e.g., https://meet.jit.si/meeting_xyz)"
+            value={meetUrl}
+            onChange={(e) => setMeetUrl(e.target.value)}
+            onPressEnter={handleSendLink}
+          />
+        </div>
       </Modal>
     </div>
   );
