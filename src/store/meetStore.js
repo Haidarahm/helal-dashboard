@@ -24,8 +24,6 @@ const useMeetStore = create((set) => ({
       return { success: false, error: msg };
     } catch (error) {
       const errorMessage =
-        error?.response?.data?.message ||
-        error?.response?.data?.error ||
         error?.message ||
         "Failed to create meeting";
       set({ loading: false, error: errorMessage });

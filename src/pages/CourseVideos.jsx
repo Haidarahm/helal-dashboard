@@ -292,13 +292,7 @@ export default function CourseVideos({ id }) {
           layout="vertical"
           initialValues={{ ...initialForm, course_id: effectiveId }}
         >
-          <Form.Item
-            label="Course ID"
-            name="course_id"
-            rules={editing ? [] : [{ required: true, message: "Required" }]}
-          >
-            <Input disabled value={effectiveId} />
-          </Form.Item>
+    
 
           <Form.Item label="YouTube Path" name="youtube_path">
             <Input placeholder="youtube url or id" disabled={!!watchedFile} />

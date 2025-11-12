@@ -41,7 +41,7 @@ const useUsersStore = create((set) => ({
         error?.message ||
         "Failed to fetch users";
       set({ loading: false, error: errorMessage });
-      toast.error(errorMessage);
+      
       return { success: false, error: errorMessage };
     }
   },

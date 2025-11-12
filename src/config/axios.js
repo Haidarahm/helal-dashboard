@@ -42,12 +42,7 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(error);
     } else if (error.response?.status >= 500) {
       toast.error("Server error. Please try again later.");
-    } else if (error.response?.status >= 400) {
-      const errorMessage =
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        "An error occurred";
-      toast.error(errorMessage);
+   
     } else if (!error.response) {
       toast.error("Network error. Please check your connection.");
     }

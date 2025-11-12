@@ -194,7 +194,7 @@ const News = () => {
               type="primary"
               icon={<PlusOutlined />}
               onClick={handleAddNews}
-              className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 border-0"
+              className="bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 border-0"
             >
               Add News
             </Button>

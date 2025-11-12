@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Table, Tag, Typography, Spin, Empty, Button, Select } from "antd";
+import { Table,  Typography, Spin, Empty, Button, Select } from "antd";
 import useUsersStore from "../store/usersStore";
 import useMeetingsStore from "../store/meetingsStore";
 
@@ -14,6 +14,7 @@ export const Users = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [meetingId, setMeetingId] = useState(null);
   const [showMeetingSelect, setShowMeetingSelect] = useState(false);
+  const [meetingsLoading, setMeetingsLoading] = useState(false);
 
   useEffect(() => {
     fetchUsers(page, perPage);
@@ -34,17 +35,6 @@ export const Users = () => {
     { title: "Name", dataIndex: "name", key: "name" },
     { title: "Email", dataIndex: "email", key: "email" },
     { title: "Role", dataIndex: "role", key: "role" },
-    {
-      title: "Active",
-      dataIndex: "is_active",
-      key: "is_active",
-      render: (val) =>
-        val ? (
-          <Tag color="green">Active</Tag>
-        ) : (
-          <Tag color="default">Inactive</Tag>
-        ),
-    },
   ];
 
   return (
@@ -68,9 +58,16 @@ export const Users = () => {
               />
             )}
             <Button
+              loading={meetingsLoading}
+              disabled={meetingsLoading}
               onClick={async () => {
-                await fetchMeetings();
-                setShowMeetingSelect(true);
+                setMeetingsLoading(true);
+                try {
+                  await fetchMeetings();
+                  setShowMeetingSelect(true);
+                } finally {
+                  setMeetingsLoading(false);
+                }
               }}
             >
               Check meetings

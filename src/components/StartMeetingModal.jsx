@@ -31,13 +31,14 @@ const StartMeetingModal = ({ open, onClose }) => {
       duration: Number(values.duration || 0),
     });
     if (res.success) {
-      setCreatedInfo(res.data);
+      console.log(res);
+      setCreatedInfo(res.data.meeting.meet_url);
     }
   };
 
   const copyUrl = async () => {
     try {
-      await navigator.clipboard.writeText(createdInfo?.meet_url || "");
+      await navigator.clipboard.writeText(createdInfo || "");
       message.success("Meeting link copied to clipboard");
     } catch (e) {
       message.error("Failed to copy link");
@@ -69,22 +70,13 @@ const StartMeetingModal = ({ open, onClose }) => {
       {createdInfo ? (
         <div>
           <div style={{ marginBottom: 8 }}>
-            {createdInfo?.message || "Meeting created successfully"}
+            { "Meeting created successfully"}
           </div>
-          <Input readOnly value={createdInfo?.meet_url || ""} />
+          <Input readOnly value={createdInfo || ""} />
         </div>
       ) : (
         <Form form={form} layout="vertical">
-          <Form.Item
-            name="summary"
-            label="Summary"
-            rules={[
-              { required: true, message: "Please enter meeting summary" },
-            ]}
-          >
-            <Input placeholder="Team Meeting" />
-          </Form.Item>
-          <Form.Item
+            <Form.Item
             name="start_time"
             label="Start Time"
             rules={[{ required: true, message: "Please select start time" }]}
@@ -97,6 +89,16 @@ const StartMeetingModal = ({ open, onClose }) => {
               style={{ width: "100%" }}
             />
           </Form.Item>
+          <Form.Item
+            name="summary"
+            label="Summary"
+            rules={[
+              { required: true, message: "Please enter meeting summary" },
+            ]}
+          >
+            <Input placeholder="Team Meeting" />
+          </Form.Item>
+        
           <Form.Item
             name="duration"
             label="Duration (minutes)"

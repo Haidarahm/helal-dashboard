@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { coursesApi } from "../apis/courses";
+import { coursesApi } from "../apis/courses/courses";
 import { toast } from "react-toastify";
 
 const useCoursesStore = create((set) => ({
@@ -14,6 +14,7 @@ const useCoursesStore = create((set) => ({
     per_page: 10,
     total: 0,
   },
+  courseUsersLoading: false,
 
   // Get all courses
   fetchCourses: async (language = "en") => {
@@ -133,7 +134,7 @@ const useCoursesStore = create((set) => ({
 
   // Fetch users enrolled in a specific course
   fetchCourseUsers: async (courseId, page = 1, per_page = 10) => {
-    set({ loading: true, error: null });
+    set({ courseUsersLoading: true, error: null });
     try {
       const resp = await coursesApi.getCoursesUsers({
         page,
@@ -149,14 +150,14 @@ const useCoursesStore = create((set) => ({
           total: Array.isArray(users) ? users.length : 0,
         };
         set({
-          loading: false,
+          courseUsersLoading: false,
           courseUsers: users,
           courseUsersPagination: pagination,
         });
         return { success: true, data: resp };
       }
       const msg = resp?.message || "Failed to fetch course users";
-      set({ loading: false, error: msg });
+      set({ courseUsersLoading: false, error: msg });
       toast.error(msg);
       return { success: false, error: msg };
     } catch (error) {
@@ -165,7 +166,7 @@ const useCoursesStore = create((set) => ({
         error?.response?.data?.error ||
         error?.message ||
         "Failed to fetch course users";
-      set({ loading: false, error: errorMessage });
+      set({ courseUsersLoading: false, error: errorMessage });
       toast.error(errorMessage);
       return { success: false, error: errorMessage };
     }

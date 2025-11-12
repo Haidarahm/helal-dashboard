@@ -1,22 +1,6 @@
-import axiosInstance from "../config/axios";
+import axiosInstance from "../../config/axios";
 
-/**
- * Courses API
- *
- * Usage example for addCourse:
- * const formData = new FormData();
- * formData.append('title_en', 'English Title');
- * formData.append('title_ar', 'العنوان');
- * formData.append('subTitle_en', 'English Subtitle');
- * formData.append('subTitle_ar', 'العنوان الفرعي');
- * formData.append('description_en', 'English Description');
- * formData.append('description_ar', 'الوصف بالعربي');
- * formData.append('price_aed', '100.00');
- * formData.append('price_usd', '27.00');
- * formData.append('reviews', '5');
- * formData.append('image', imageFile);
- * const result = await coursesApi.addCourse(formData);
- */
+
 export const coursesApi = {
   // Add course
   addCourse: async (formData) => {

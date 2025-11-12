@@ -28,7 +28,6 @@ import {
 import { FiUsers, FiVideo, FiEdit2, FiTrash2 } from "react-icons/fi";
 import useCoursesStore from "../store/coursesStore";
 import useMeetingsStore from "../store/meetingsStore";
-import { coursesApi } from "../apis/courses";
 import { toast } from "react-toastify";
 import DescriptionText from "../components/DescriptionText";
 
@@ -48,6 +47,7 @@ const Courses = () => {
     courseUsers,
     courseUsersPagination,
     fetchCourseUsers,
+    courseUsersLoading,
   } = useCoursesStore();
   const { meetings, fetchMeetings, sendUsersEmailRoom, sending } =
     useMeetingsStore();
@@ -64,6 +64,7 @@ const Courses = () => {
   const [usersSelectedRowKeys, setUsersSelectedRowKeys] = useState([]);
   const [meetingId, setMeetingId] = useState(null);
   const [showMeetingSelect, setShowMeetingSelect] = useState(false);
+  const [meetingsBtnLoading, setMeetingsBtnLoading] = useState(false);
 
   useEffect(() => {
     fetchCourses(language);
@@ -287,8 +288,8 @@ const Courses = () => {
                       setUsersPage(1);
                       setUsersPerPage(5);
                       setUsersSelectedRowKeys([]);
-                      await fetchCourseUsers(item.id, 1, 5);
                       setUsersModalOpen(true);
+                      fetchCourseUsers(item.id, 1, 5);
                     }}
                     icon={<FiUsers />}
                   />,
@@ -424,9 +425,16 @@ const Courses = () => {
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <Button
+              loading={meetingsBtnLoading}
+              disabled={meetingsBtnLoading}
               onClick={async () => {
-                await fetchMeetings();
-                setShowMeetingSelect(true);
+                setMeetingsBtnLoading(true);
+                try {
+                  await fetchMeetings();
+                  setShowMeetingSelect(true);
+                } finally {
+                  setMeetingsBtnLoading(false);
+                }
               }}
             >
               Check meetings
@@ -446,6 +454,7 @@ const Courses = () => {
           </div>
         </div>
         <Table
+          loading={courseUsersLoading}
           columns={[
             {
               title: "#",

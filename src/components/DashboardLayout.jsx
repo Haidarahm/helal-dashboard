@@ -146,16 +146,7 @@ const DashboardLayout = () => {
             }}
             onClick={() => setMeetOpen(true)}
           />
-          <Button
-            type="text"
-            icon={<BellOutlined />}
-            className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          />
+       
           <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
             <Avatar
               size={40}
