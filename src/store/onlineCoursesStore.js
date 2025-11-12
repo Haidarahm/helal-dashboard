@@ -6,6 +6,7 @@ const useOnlineCoursesStore = create((set, get) => ({
   loading: false,
   error: null,
   onlineCourses: [],
+  currentLang: "ar", // Store current language
   pagination: {
     current_page: 1,
     last_page: 1,
@@ -15,7 +16,7 @@ const useOnlineCoursesStore = create((set, get) => ({
 
   // Fetch all online courses
   fetchOnlineCourses: async ({ lang = "en", page = 1, per_page = 10 } = {}) => {
-    set({ loading: true, error: null });
+    set({ loading: true, error: null, currentLang: lang });
     try {
       const resp = await onlineCoursesApi.getAllOnlineCourses({
         lang,
@@ -30,7 +31,13 @@ const useOnlineCoursesStore = create((set, get) => ({
           per_page,
           total: Array.isArray(list) ? list.length : 0,
         };
-        set({ loading: false, onlineCourses: list, pagination, error: null });
+        set({
+          loading: false,
+          onlineCourses: list,
+          pagination,
+          error: null,
+          currentLang: lang,
+        });
         return { success: true, data: resp };
       }
       const msg = resp?.message || "Failed to fetch online courses";
@@ -57,20 +64,21 @@ const useOnlineCoursesStore = create((set, get) => ({
       if (resp?.status) {
         toast.success(resp?.message || "Online course created");
         set({ loading: false });
-        const { pagination } = get();
+        const { pagination, currentLang } = get();
         await get().fetchOnlineCourses({
+          lang: currentLang,
           page: pagination.current_page,
           per_page: pagination.per_page,
         });
         return { success: true, data: resp };
       }
-      const msg = resp?.message || "Failed to create online course";
+      const msg = resp?.error || "Failed to create online course";
       set({ loading: false, error: msg });
       toast.error(msg);
       return { success: false, error: msg };
     } catch (error) {
+      console.log(error);
       const errorMessage =
-        error?.response?.data?.message ||
         error?.response?.data?.error ||
         error?.message ||
         "Failed to create online course";
@@ -88,8 +96,9 @@ const useOnlineCoursesStore = create((set, get) => ({
       if (resp?.status) {
         toast.success(resp?.message || "Online course updated");
         set({ loading: false });
-        const { pagination } = get();
+        const { pagination, currentLang } = get();
         await get().fetchOnlineCourses({
+          lang: currentLang,
           page: pagination.current_page,
           per_page: pagination.per_page,
         });
@@ -119,8 +128,9 @@ const useOnlineCoursesStore = create((set, get) => ({
       if (resp?.status || resp?.success) {
         toast.success(resp?.message || "Online course deleted");
         set({ loading: false });
-        const { pagination } = get();
+        const { pagination, currentLang } = get();
         await get().fetchOnlineCourses({
+          lang: currentLang,
           page: pagination.current_page,
           per_page: pagination.per_page,
         });

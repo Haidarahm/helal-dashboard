@@ -28,7 +28,7 @@ export const onlineCoursesApi = {
   // Create online course (multipart)
   createOnlineCourse: async (fields) => {
     const formData = buildFormData(fields);
-    const response = await axiosInstance.post("/online-course/add", formData, {
+    const response = await axiosInstance.post("/admin/online-course/add", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data;
@@ -38,7 +38,7 @@ export const onlineCoursesApi = {
   updateOnlineCourse: async (id, fields) => {
     const formData = buildFormData(fields);
     const response = await axiosInstance.post(
-      `/online-course/update/${id}`,
+      `/admin/online-course/update/${id}`,
       formData,
       { headers: { "Content-Type": "multipart/form-data" } }
     );
@@ -47,7 +47,7 @@ export const onlineCoursesApi = {
 
   // Send meeting URL for an online course
   sendMeetingUrl: async (id, meet_url) => {
-    const response = await axiosInstance.post(`/online-course/add-meet/${id}`, {
+    const response = await axiosInstance.post(`/admin/online-course/add-meet/${id}`, {
       meet_url,
     });
     return response.data;
@@ -55,7 +55,7 @@ export const onlineCoursesApi = {
 
   // Delete online course
   deleteOnlineCourse: async (id) => {
-    const response = await axiosInstance.delete(`/online-course/delete/${id}`);
+    const response = await axiosInstance.delete(`/admin/online-course/delete/${id}`);
     return response.data;
   },
 
