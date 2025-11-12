@@ -6,7 +6,8 @@ import {
 import { ToastContainer } from "react-toastify";
 import AuthGate from "./components/AuthGate";
 import DashboardLayout from "./components/DashboardLayout";
-import Courses from "./pages/Courses";
+import Courses from "./pages/courses/Courses";
+import OnlineCourses from "./pages/courses/OnlineCourses";
 import News from "./pages/News";
 import LiveVideo from "./pages/LiveVideo";
 import CourseVideos from "./pages/CourseVideos";
@@ -34,6 +35,10 @@ const router = createBrowserRouter([
       {
         path: "courses",
         element: <Courses />,
+      },
+      {
+        path: "online-courses",
+        element: <OnlineCourses />,
       },
       {
         path: "news",

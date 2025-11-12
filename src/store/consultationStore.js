@@ -35,7 +35,7 @@ const useConsultationStore = create((set) => ({
       }
       const msg = resp?.message || "Failed to fetch consultations";
       set({ loading: false, error: msg });
-      toast.error(msg);
+    
       return { success: false, error: msg };
     } catch (error) {
       const errorMessage =
@@ -44,7 +44,7 @@ const useConsultationStore = create((set) => ({
         error?.message ||
         "Failed to fetch consultations";
       set({ loading: false, error: errorMessage });
-      toast.error(errorMessage);
+     
       return { success: false, error: errorMessage };
     }
   },

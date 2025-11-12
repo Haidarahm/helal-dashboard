@@ -18,7 +18,7 @@ const useMeetingsStore = create((set) => ({
       }
       const msg = response?.message || "Failed to fetch meetings";
       set({ loading: false, error: msg });
-      toast.error(msg);
+      
       return { success: false, error: msg };
     } catch (error) {
       const errorMessage =
@@ -27,7 +27,7 @@ const useMeetingsStore = create((set) => ({
         error?.message ||
         "Failed to fetch meetings";
       set({ loading: false, error: errorMessage });
-      toast.error(errorMessage);
+   
       return { success: false, error: errorMessage };
     }
   },

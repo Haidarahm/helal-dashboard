@@ -26,10 +26,10 @@ import {
   UploadOutlined,
 } from "@ant-design/icons";
 import { FiUsers, FiVideo, FiEdit2, FiTrash2 } from "react-icons/fi";
-import useCoursesStore from "../store/coursesStore";
-import useMeetingsStore from "../store/meetingsStore";
+import useCoursesStore from "../../store/coursesStore";
+import useMeetingsStore from "../../store/meetingsStore";
 import { toast } from "react-toastify";
-import DescriptionText from "../components/DescriptionText";
+import DescriptionText from "../../components/DescriptionText";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;

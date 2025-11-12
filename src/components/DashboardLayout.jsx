@@ -34,10 +34,21 @@ const DashboardLayout = () => {
 
   const menuItems = [
     {
-      key: "/dashboard/courses",
+      key: "courses-group",
       icon: <BookOutlined />,
       label: "Courses",
-      onClick: () => navigate("/dashboard/courses"),
+      children: [
+        {
+          key: "/dashboard/courses",
+          label: "Offline Courses",
+          onClick: () => navigate("/dashboard/courses"),
+        },
+        {
+          key: "/dashboard/online-courses",
+          label: "Online Courses",
+          onClick: () => navigate("/dashboard/online-courses"),
+        },
+      ],
     },
     {
       key: "/dashboard/news",
@@ -146,7 +157,7 @@ const DashboardLayout = () => {
             }}
             onClick={() => setMeetOpen(true)}
           />
-       
+
           <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
             <Avatar
               size={40}

@@ -29,7 +29,7 @@ export const videosApi = {
   create: async (fields, options = {}) => {
     const formData = buildVideoFormData(fields);
     const response = await axiosInstance.post(
-      "/api/admin/videos/store",
+      "/admin/videos/store",
       formData,
       {
         headers: { "Content-Type": "multipart/form-data" },
@@ -43,7 +43,7 @@ export const videosApi = {
   update: async (id, fields, options = {}) => {
     const formData = buildVideoFormData(fields);
     const response = await axiosInstance.post(
-      `/api/admin/videos/update/${id}`,
+      `/admin/videos/update/${id}`,
       formData,
       {
         headers: { "Content-Type": "multipart/form-data" },
@@ -56,7 +56,7 @@ export const videosApi = {
   // Delete video by id
   delete: async (id) => {
     const response = await axiosInstance.delete(
-      `/api/admin/videos/delete/${id}`
+      `/admin/videos/delete/${id}`
     );
     return response.data;
   },
@@ -67,7 +67,7 @@ export const videosApi = {
     { lang = "en", page = 1, per_page = 10 } = {}
   ) => {
     const response = await axiosInstance.get(
-      `/api/courses/${courseId}/videos`,
+      `/courses/${courseId}/videos`,
       { params: { lang, page, per_page } }
     );
     return response.data;

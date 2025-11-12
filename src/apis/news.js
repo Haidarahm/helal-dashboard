@@ -20,7 +20,7 @@ import axiosInstance from "../config/axios";
 export const newsApi = {
   // Add news
   addNews: async (formData) => {
-    const response = await axiosInstance.post("/api/news-sections", formData, {
+    const response = await axiosInstance.post("/news-sections", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -30,7 +30,7 @@ export const newsApi = {
 
   // Get all news with pagination and language
   getAllNews: async (language = "en", page = 1, perPage = 10) => {
-    const response = await axiosInstance.get("/api/news-sections", {
+    const response = await axiosInstance.get("/news-sections", {
       params: {
         lang: language,
         page: page,
@@ -42,7 +42,7 @@ export const newsApi = {
 
   // Get single news by ID
   getNewsById: async (id, language = "en") => {
-    const response = await axiosInstance.get(`/api/news-sections/${id}`, {
+    const response = await axiosInstance.get(`/news-sections/${id}`, {
       params: {
         lang: language,
       },
@@ -53,7 +53,7 @@ export const newsApi = {
   // Update news
   updateNews: async (id, formData) => {
     const response = await axiosInstance.post(
-      `/api/news-sections/${id}`,
+      `/news-sections/${id}`,
       formData,
       {
         headers: {
@@ -66,7 +66,7 @@ export const newsApi = {
 
   // Delete news
   deleteNews: async (id) => {
-    const response = await axiosInstance.delete(`/api/news-sections/${id}`);
+    const response = await axiosInstance.delete(`/news-sections/${id}`);
     return response.data;
   },
 };

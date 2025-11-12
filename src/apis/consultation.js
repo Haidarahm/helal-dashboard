@@ -3,7 +3,7 @@ import axiosInstance from "../config/axios";
 export const consultationApi = {
   // Get all consultations
   getConsultations: async (page = 1, per_page = 10) => {
-    const response = await axiosInstance.get("/api/admin/consultations", {
+    const response = await axiosInstance.get("/admin/consultations", {
       params: { page, per_page },
     });
     return response.data;
@@ -17,7 +17,7 @@ export const consultationApi = {
     time,
   }) => {
     const response = await axiosInstance.post(
-      "/api/admin/consultations/response",
+      "/admin/consultations/response",
       { consultation_id, meet_url, date, time }
     );
     return response.data;
