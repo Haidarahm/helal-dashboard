@@ -107,7 +107,6 @@ export default function CourseVideos({ id }) {
     }
   }, [isModalOpen, effectiveId, form]);
 
-
   const list = useMemo(() => videos || [], [videos]);
 
   const openAdd = () => {
