@@ -20,7 +20,7 @@ import {
   Tooltip,
 } from "antd";
 import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
-import { FiEdit2, FiTrash2, FiLink } from "react-icons/fi";
+import { FiEdit2, FiTrash2, FiLink, FiUsers } from "react-icons/fi";
 import dayjs from "dayjs";
 import useOnlineCoursesStore from "../../store/onlineCoursesStore";
 
@@ -37,6 +37,10 @@ const OnlineCourses = () => {
     updateOnlineCourse,
     deleteOnlineCourse,
     sendMeetingUrl,
+    courseUsers,
+    courseUsersPagination,
+    courseUsersLoading,
+    getOnlineCoursesUsers,
   } = useOnlineCoursesStore();
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(5);
@@ -48,6 +52,10 @@ const OnlineCourses = () => {
   const [sendLinkModalOpen, setSendLinkModalOpen] = useState(false);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [meetUrl, setMeetUrl] = useState("");
+  const [usersModalOpen, setUsersModalOpen] = useState(false);
+  const [usersCourseId, setUsersCourseId] = useState(null);
+  const [usersPage, setUsersPage] = useState(1);
+  const [usersPerPage, setUsersPerPage] = useState(5);
 
   useEffect(() => {
     fetchOnlineCourses({ lang, page, per_page: perPage });
@@ -119,6 +127,18 @@ const OnlineCourses = () => {
     setSendLinkModalOpen(false);
     setSelectedCourseId(null);
     setMeetUrl("");
+  };
+
+  const handleOpenUsers = async (courseId) => {
+    setUsersCourseId(courseId);
+    setUsersPage(1);
+    setUsersPerPage(5);
+    setUsersModalOpen(true);
+    await getOnlineCoursesUsers({
+      course_online_id: courseId,
+      page: 1,
+      per_page: 5,
+    });
   };
 
   const handleCancel = () => {
@@ -303,9 +323,17 @@ const OnlineCourses = () => {
     {
       title: "Action",
       key: "action",
-      width: 180,
+      width: 220,
       render: (_, record) => (
         <div style={{ display: "flex", gap: 8 }}>
+          <Tooltip title="Enrolled users">
+            <Button
+              type="text"
+              icon={<FiUsers />}
+              className="text-purple-600"
+              onClick={() => handleOpenUsers(record.id)}
+            />
+          </Tooltip>
           <Tooltip title="Send link">
             <Button
               type="text"
@@ -634,6 +662,49 @@ const OnlineCourses = () => {
             onPressEnter={handleSendLink}
           />
         </div>
+      </Modal>
+
+      <Modal
+        title="Enrolled Users"
+        open={usersModalOpen}
+        onCancel={() => setUsersModalOpen(false)}
+        footer={null}
+        width={720}
+        destroyOnClose
+      >
+        <Table
+          loading={courseUsersLoading}
+          columns={[
+            {
+              title: "#",
+              key: "order",
+              width: 70,
+              render: (_t, _r, i) => i + 1,
+            },
+            { title: "Name", dataIndex: "name", key: "name" },
+            { title: "Email", dataIndex: "email", key: "email" },
+            { title: "Role", dataIndex: "role", key: "role" },
+          ]}
+          dataSource={(courseUsers || []).map((u) => ({ key: u.id, ...u }))}
+          pagination={{
+            current: courseUsersPagination?.current_page || usersPage,
+            total: courseUsersPagination?.total || 0,
+            pageSize: courseUsersPagination?.per_page || usersPerPage,
+            showSizeChanger: true,
+            onChange: async (p, ps) => {
+              setUsersPage(p);
+              setUsersPerPage(ps);
+              if (usersCourseId) {
+                await getOnlineCoursesUsers({
+                  course_online_id: usersCourseId,
+                  page: p,
+                  per_page: ps,
+                });
+              }
+            },
+          }}
+          bordered
+        />
       </Modal>
     </div>
   );

@@ -177,6 +177,61 @@ const useOnlineCoursesStore = create((set, get) => ({
       return { success: false, error: errorMessage };
     }
   },
+
+  // Course users state
+  courseUsers: [],
+  courseUsersPagination: {
+    current_page: 1,
+    last_page: 1,
+    per_page: 5,
+    total: 0,
+  },
+  courseUsersLoading: false,
+
+  // Get users enrolled in an online course
+  getOnlineCoursesUsers: async ({
+    page = 1,
+    per_page = 5,
+    course_online_id,
+  }) => {
+    set({ courseUsersLoading: true, error: null });
+    try {
+      const resp = await onlineCoursesApi.getOnlineCoursesUsers({
+        page,
+        per_page,
+        course_online_id,
+      });
+      if (resp?.status) {
+        const users = resp.data || [];
+        const pagination = resp.pagination || {
+          current_page: page,
+          last_page: page,
+          per_page,
+          total: Array.isArray(users) ? users.length : 0,
+        };
+        set({
+          courseUsersLoading: false,
+          courseUsers: users,
+          courseUsersPagination: pagination,
+          error: null,
+        });
+        return { success: true, data: resp };
+      }
+      const msg = resp?.message || "Failed to fetch course users";
+      set({ courseUsersLoading: false, error: msg });
+      toast.error(msg);
+      return { success: false, error: msg };
+    } catch (error) {
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        "Failed to fetch course users";
+      set({ courseUsersLoading: false, error: errorMessage });
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  },
 }));
 
 export default useOnlineCoursesStore;
