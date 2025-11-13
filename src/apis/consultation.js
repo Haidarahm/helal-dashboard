@@ -9,7 +9,6 @@ export const consultationApi = {
     return response.data;
   },
 
-  // Send response for a consultation
   sendConsultationResponse: async ({
     consultation_id,
     meet_url,
