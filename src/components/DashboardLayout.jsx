@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { Layout, Menu, Avatar, Dropdown, Typography, Button } from "antd";
 import { toast } from "react-toastify";
@@ -27,6 +27,7 @@ const { Title } = Typography;
 const DashboardLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [meetOpen, setMeetOpen] = useState(false);
+  const [openKeys, setOpenKeys] = useState([]);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -76,10 +77,21 @@ const DashboardLayout = () => {
       onClick: () => navigate("/dashboard/availability"),
     },
     {
-      key: "/dashboard/consultations",
+      key: "consultations-group",
       icon: <PhoneOutlined />,
       label: "Consultations",
-      onClick: () => navigate("/dashboard/consultations"),
+      children: [
+        {
+          key: "/dashboard/consultations",
+          label: "Consultations",
+          onClick: () => navigate("/dashboard/consultations"),
+        },
+        {
+          key: "/dashboard/consultation-types",
+          label: "Consultation Types",
+          onClick: () => navigate("/dashboard/consultation-types"),
+        },
+      ],
     },
     {
       key: "/dashboard/users",
@@ -118,6 +130,15 @@ const DashboardLayout = () => {
 
   // Get current selected key based on location
   const selectedKey = location.pathname;
+
+  // Auto-open submenus based on current path
+  useEffect(() => {
+    if (location.pathname.includes("/dashboard/consultation")) {
+      setOpenKeys(["consultations-group"]);
+    } else if (location.pathname.includes("/dashboard/course")) {
+      setOpenKeys(["courses-group"]);
+    }
+  }, [location.pathname]);
 
   return (
     <Layout className="min-h-screen bg-gray-50">
@@ -208,6 +229,8 @@ const DashboardLayout = () => {
           <Menu
             mode="inline"
             selectedKeys={[selectedKey]}
+            openKeys={openKeys}
+            onOpenChange={setOpenKeys}
             items={menuItems}
             style={{
               borderRight: 0,

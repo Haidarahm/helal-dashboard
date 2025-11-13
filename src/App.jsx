@@ -13,6 +13,7 @@ import LiveVideo from "./pages/LiveVideo";
 import CourseVideos from "./pages/CourseVideos";
 import { Users } from "./pages/Users";
 import { Consultations } from "./pages/Consultations";
+import ConsultationTypes from "./pages/ConsultationTypes";
 import Meetings from "./pages/Meetings";
 import Availability from "./pages/Availability";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -60,6 +61,10 @@ const router = createBrowserRouter([
       {
         path: "consultations",
         element: <Consultations />,
+      },
+      {
+        path: "consultation-types",
+        element: <ConsultationTypes />,
       },
       {
         path: "meetings",
