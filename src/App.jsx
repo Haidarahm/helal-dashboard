@@ -51,8 +51,14 @@ const router = createBrowserRouter([
         path: "news",
         element: <News />,
       },
+
+      ,
       {
         path: "live-video",
+        element: <LiveVideo />,
+      },
+      {
+        path: "live-video/:meetId",
         element: <LiveVideo />,
       },
       {

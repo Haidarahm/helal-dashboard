@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
 
 const LiveVideo = () => {
+  const { meetId } = useParams();
   const [meetUrl, setMeetUrl] = useState("");
   const [joinedUrl, setJoinedUrl] = useState("");
   const [error, setError] = useState("");
@@ -29,6 +31,16 @@ const LiveVideo = () => {
     }
     return val;
   };
+
+  // Auto-join if meetId exists in the URL
+  useEffect(() => {
+    if (meetId) {
+      const url = normalizeUrl(meetId);
+      setMeetUrl(url);
+      setJoinedUrl(url);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [meetId]);
 
   const handleJoin = async () => {
     setError("");

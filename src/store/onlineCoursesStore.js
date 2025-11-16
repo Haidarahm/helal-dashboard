@@ -74,7 +74,6 @@ const useOnlineCoursesStore = create((set, get) => ({
       }
       const msg = resp?.error || "Failed to create online course";
       set({ loading: false, error: msg });
-      toast.error(msg);
       return { success: false, error: msg };
     } catch (error) {
       console.log(error);
