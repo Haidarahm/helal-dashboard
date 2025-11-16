@@ -373,6 +373,7 @@ const OnlineCourses = () => {
             Online Courses
           </Title>
           <div className="flex items-center gap-3">
+       
             <Button.Group>
               <Button
                 type={lang === "en" ? "primary" : "default"}

@@ -8,6 +8,7 @@ import AuthGate from "./components/AuthGate";
 import DashboardLayout from "./components/DashboardLayout";
 import Courses from "./pages/courses/Courses";
 import OnlineCourses from "./pages/courses/OnlineCourses";
+import PrivateLessons from "./pages/courses/PrivateLessons";
 import News from "./pages/News";
 import LiveVideo from "./pages/LiveVideo";
 import CourseVideos from "./pages/CourseVideos";
@@ -41,6 +42,10 @@ const router = createBrowserRouter([
       {
         path: "online-courses",
         element: <OnlineCourses />,
+      },
+      {
+        path: "private-lessons",
+        element: <PrivateLessons />,
       },
       {
         path: "news",

@@ -50,6 +50,11 @@ const DashboardLayout = () => {
           label: "Online Courses",
           onClick: () => navigate("/dashboard/online-courses"),
         },
+        {
+          key: "/dashboard/private-lessons",
+          label: "Private Lessons",
+          onClick: () => navigate("/dashboard/private-lessons"),
+        },
       ],
     },
     {
