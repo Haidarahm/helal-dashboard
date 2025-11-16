@@ -36,7 +36,7 @@ export const privateCoursesApi = {
   // Update private lesson
   updatePrivateLesson: async (id, fields) => {
     const formData = buildFormData(fields);
-    const response = await axiosInstance.put(
+    const response = await axiosInstance.post(
       `/admin/private-lessons/${id}`,
       formData,
       { headers: { "Content-Type": "multipart/form-data" } }
