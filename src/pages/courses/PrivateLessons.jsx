@@ -17,8 +17,9 @@ import {
   message,
 } from "antd";
 import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
-import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import { FiEdit2, FiTrash2, FiEye, FiPlus } from "react-icons/fi";
 import usePrivateCoursesStore from "../../store/privateCoursesStore";
+import usePrivateCourseInfoStore from "../../store/privateCourseInfoStore";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -33,6 +34,14 @@ const PrivateLessons = () => {
     updatePrivateLesson,
     deletePrivateLesson,
   } = usePrivateCoursesStore();
+  const {
+    info,
+    loading: infoLoading,
+    fetchLessonInfo,
+    addLessonInfo,
+    updateLessonInfo,
+    deleteLessonInfo,
+  } = usePrivateCourseInfoStore();
 
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(5);
@@ -41,10 +50,16 @@ const PrivateLessons = () => {
   const [editingLesson, setEditingLesson] = useState(null);
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
+  // Information modals/forms
+  const [infoForm] = Form.useForm();
+  const [infoModalOpen, setInfoModalOpen] = useState(false);
+  const [viewInfoOpen, setViewInfoOpen] = useState(false);
+  const [selectedLessonId, setSelectedLessonId] = useState(null);
+  const [editingInfoId, setEditingInfoId] = useState(null);
 
   useEffect(() => {
     fetchPrivateLessons({ lang, page, per_page: perPage });
-  }, []);
+  }, [lang, page, perPage]);
 
   const dataSource = useMemo(
     () => (privateLessons || []).map((c) => ({ key: c.id, ...c })),
@@ -188,6 +203,29 @@ const PrivateLessons = () => {
       width: 160,
       render: (_, record) => (
         <div style={{ display: "flex", gap: 8 }}>
+          <Tooltip title="Add data">
+            <Button
+              type="text"
+              icon={<FiPlus />}
+              onClick={() => {
+                setSelectedLessonId(record.id);
+                setEditingInfoId(null);
+                infoForm.resetFields();
+                setInfoModalOpen(true);
+              }}
+            />
+          </Tooltip>
+          <Tooltip title="View data">
+            <Button
+              type="text"
+              icon={<FiEye />}
+              onClick={async () => {
+                setSelectedLessonId(record.id);
+                await fetchLessonInfo(record.id);
+                setViewInfoOpen(true);
+              }}
+            />
+          </Tooltip>
           <Tooltip title="Edit">
             <Button
               type="text"
@@ -220,7 +258,6 @@ const PrivateLessons = () => {
             Private Lessons
           </Title>
           <div className="flex items-center gap-3">
-      
             <Button.Group>
               <Button
                 type={lang === "en" ? "primary" : "default"}
@@ -276,6 +313,234 @@ const PrivateLessons = () => {
           />
         )}
       </div>
+
+      {/* Add / Update Lesson Info Modal */}
+      <Modal
+        title={editingInfoId ? "Update Lesson Info" : "Add Lesson Info"}
+        open={infoModalOpen}
+        onCancel={() => {
+          setInfoModalOpen(false);
+          setEditingInfoId(null);
+          setSelectedLessonId(null);
+        }}
+        onOk={async () => {
+          try {
+            const values = await infoForm.validateFields();
+            const payload = {
+              place_en: values.place_en,
+              place_ar: values.place_ar,
+              price_aed:
+                values.price_aed !== undefined && values.price_aed !== null
+                  ? Number(values.price_aed)
+                  : undefined,
+              price_usd:
+                values.price_usd !== undefined && values.price_usd !== null
+                  ? Number(values.price_usd)
+                  : undefined,
+              duration:
+                values.duration !== undefined && values.duration !== null
+                  ? Number(values.duration)
+                  : undefined,
+            };
+            if (editingInfoId) {
+              await updateLessonInfo(editingInfoId, payload, {
+                refetchLessonId: selectedLessonId,
+              });
+            } else if (selectedLessonId) {
+              await addLessonInfo(selectedLessonId, payload);
+            }
+            setInfoModalOpen(false);
+            setEditingInfoId(null);
+          } catch (e) {
+            // validation errors surfaced
+          }
+        }}
+        okButtonProps={{ loading: infoLoading }}
+        destroyOnClose
+      >
+        <Form form={infoForm} layout="vertical">
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Place (EN)"
+                name="place_en"
+                rules={[{ required: !editingInfoId, message: "Required" }]}
+              >
+                <Input placeholder="Dubai" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Place (AR)"
+                name="place_ar"
+                rules={[{ required: !editingInfoId, message: "Required" }]}
+              >
+                <Input placeholder="دبي" dir="rtl" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Price (AED)"
+                name="price_aed"
+                rules={[{ required: !editingInfoId, message: "Required" }]}
+              >
+                <Input placeholder="12.30" type="number" step="0.01" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Price (USD)"
+                name="price_usd"
+                rules={[{ required: !editingInfoId, message: "Required" }]}
+              >
+                <Input placeholder="10.00" type="number" step="0.01" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Duration (min)"
+                name="duration"
+                rules={[{ required: !editingInfoId, message: "Required" }]}
+              >
+                <Input placeholder="60" type="number" />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Modal>
+
+      {/* View Lesson Info Modal */}
+      <Modal
+        title="Lesson Information"
+        open={viewInfoOpen}
+        onCancel={() => {
+          setViewInfoOpen(false);
+          setSelectedLessonId(null);
+        }}
+        footer={null}
+        width={800}
+        destroyOnClose
+      >
+        {infoLoading ? (
+          <div className="flex justify-center items-center py-10">
+            <Spin />
+          </div>
+        ) : (
+          <Table
+            size="small"
+            columns={[
+              {
+                title: "#",
+                key: "order",
+                width: 60,
+                render: (_t, _r, i) => i + 1,
+              },
+              { title: "Place", dataIndex: "place", key: "place" },
+              {
+                title: "Price (AED)",
+                dataIndex: "price_aed",
+                key: "price_aed",
+              },
+              {
+                title: "Price (USD)",
+                dataIndex: "price_usd",
+                key: "price_usd",
+              },
+              {
+                title: "Duration (min)",
+                dataIndex: "duration",
+                key: "duration",
+              },
+              {
+                title: "Lesson",
+                key: "lesson",
+                render: (_t, row) => {
+                  const l = row.lesson || {};
+                  return (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 2,
+                      }}
+                    >
+                      <span>{l.title_en || "-"}</span>
+                      <span dir="rtl" style={{ color: "#6b7280" }}>
+                        {l.title_ar || "-"}
+                      </span>
+                    </div>
+                  );
+                },
+              },
+              {
+                title: "Action",
+                key: "action",
+                width: 140,
+                render: (_t, row) => (
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <Button
+                      size="small"
+                      onClick={() => {
+                        setEditingInfoId(row.id);
+                        infoForm.setFieldsValue({
+                          place_en: row.place_en || "",
+                          place_ar: row.place_ar || "",
+                          price_aed:
+                            row.price_aed !== undefined &&
+                            row.price_aed !== null
+                              ? String(row.price_aed)
+                              : undefined,
+                          price_usd:
+                            row.price_usd !== undefined &&
+                            row.price_usd !== null
+                              ? String(row.price_usd)
+                              : undefined,
+                          duration:
+                            row.duration !== undefined && row.duration !== null
+                              ? String(row.duration)
+                              : undefined,
+                        });
+                        setInfoModalOpen(true);
+                      }}
+                    >
+                      Edit
+                    </Button>
+                    <Popconfirm
+                      title="Delete Lesson Info"
+                      description="Are you sure you want to delete this information?"
+                      onConfirm={async () => {
+                        await deleteLessonInfo(row.id, {
+                          refetchLessonId: selectedLessonId,
+                        });
+                      }}
+                      okText="Yes"
+                      cancelText="No"
+                      okButtonProps={{ danger: true }}
+                    >
+                      <Button danger size="small">
+                        Delete
+                      </Button>
+                    </Popconfirm>
+                  </div>
+                ),
+              },
+            ]}
+            dataSource={
+              Array.isArray(info?.data)
+                ? info.data.map((x) => ({ key: x.id, ...x }))
+                : Array.isArray(info)
+                ? info.map((x) => ({ key: x.id, ...x }))
+                : []
+            }
+            pagination={false}
+            bordered
+          />
+        )}
+      </Modal>
 
       <Modal
         title={editingLesson ? "Edit Private Lesson" : "Add Private Lesson"}
