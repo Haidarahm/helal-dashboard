@@ -251,11 +251,7 @@ const ConsultationTypes = () => {
           </Button>
         </div>
 
-        {loading && dataSource.length === 0 ? (
-          <div className="flex justify-center items-center py-12">
-            <Spin size="large" />
-          </div>
-        ) : dataSource.length === 0 ? (
+        {dataSource.length === 0 && !loading ? (
           <Empty
             description="No consultation types found"
             image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -268,6 +264,7 @@ const ConsultationTypes = () => {
               bordered
               pagination={false}
               className="mb-4"
+              loading={loading}
             />
             <div className="flex justify-end">
               <Pagination
@@ -297,11 +294,7 @@ const ConsultationTypes = () => {
         width={600}
         destroyOnClose
       >
-        <Form
-          form={form}
-          layout="vertical"
-          className="mt-4"
-        >
+        <Form form={form} layout="vertical" className="mt-4">
           <Form.Item
             name="type_en"
             label="Type (English)"
@@ -360,7 +353,6 @@ const ConsultationTypes = () => {
               ]}
             >
               <InputNumber
-                
                 size="large"
                 style={{ width: "100%" }}
                 min={0}

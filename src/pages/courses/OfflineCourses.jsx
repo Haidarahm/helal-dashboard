@@ -34,7 +34,7 @@ import DescriptionText from "../../components/DescriptionText";
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
-const Courses = () => {
+const OfflineCourses = () => {
   const navigate = useNavigate();
   const {
     courses,
@@ -712,4 +712,4 @@ const Courses = () => {
   );
 };
 
-export default Courses;
+export default OfflineCourses;
