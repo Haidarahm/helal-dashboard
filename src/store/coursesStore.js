@@ -22,10 +22,10 @@ const useCoursesStore = create((set) => ({
     try {
       const response = await coursesApi.getAllCourses(language);
 
-      if (response.status === "success") {
+      if (response.status === true) {
         set({
           loading: false,
-          courses: response.courses || [],
+          courses: response.data || [],
           error: null,
         });
         return { success: true, data: response };

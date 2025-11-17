@@ -245,7 +245,7 @@ const ConsultationTypes = () => {
             icon={<FiPlus />}
             onClick={handleAddType}
             size="large"
-            className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 border-0 shadow-md"
+            className="bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 border-0 shadow-md"
           >
             Add Consultation Type
           </Button>
@@ -301,11 +301,6 @@ const ConsultationTypes = () => {
           form={form}
           layout="vertical"
           className="mt-4"
-          initialValues={{
-            price_usd: 0,
-            price_aed: 0,
-            duration: 0,
-          }}
         >
           <Form.Item
             name="type_en"
@@ -365,7 +360,7 @@ const ConsultationTypes = () => {
               ]}
             >
               <InputNumber
-                placeholder="0.00"
+                
                 size="large"
                 style={{ width: "100%" }}
                 min={0}

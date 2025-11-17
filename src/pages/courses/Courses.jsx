@@ -184,15 +184,6 @@ const Courses = () => {
         }
       }
 
-      // Debug: Log FormData entries
-      console.log("FormData entries:");
-      for (let pair of formData.entries()) {
-        if (pair[1] instanceof File) {
-          console.log(`${pair[0]}:`, pair[1].name, `(${pair[1].size} bytes)`);
-        } else {
-          console.log(`${pair[0]}:`, pair[1]);
-        }
-      }
 
       if (editingCourse) {
         console.log("Updating course with ID:", editingCourse.id);
