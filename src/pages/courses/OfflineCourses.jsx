@@ -17,6 +17,7 @@ import {
   InputNumber,
   Table,
   Select,
+  Pagination,
 } from "antd";
 import {
   BookOutlined,
@@ -39,6 +40,7 @@ const OfflineCourses = () => {
   const {
     courses,
     loading,
+    pagination,
     fetchCourses,
     deleteCourse,
     addCourse,
@@ -52,6 +54,8 @@ const OfflineCourses = () => {
   const { meetings, fetchMeetings, sendUsersEmailRoom, sending } =
     useMeetingsStore();
   const [language, setLanguage] = useState("en");
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(6);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
   const [form] = Form.useForm();
@@ -60,15 +64,15 @@ const OfflineCourses = () => {
   const [usersModalOpen, setUsersModalOpen] = useState(false);
   const [usersCourseId, setUsersCourseId] = useState(null);
   const [usersPage, setUsersPage] = useState(1);
-  const [usersPerPage, setUsersPerPage] = useState(5);
+  const [usersPerPage, setUsersPerPage] = useState(6);
   const [usersSelectedRowKeys, setUsersSelectedRowKeys] = useState([]);
   const [meetingId, setMeetingId] = useState(null);
   const [showMeetingSelect, setShowMeetingSelect] = useState(false);
   const [meetingsBtnLoading, setMeetingsBtnLoading] = useState(false);
 
   useEffect(() => {
-    fetchCourses(language);
-  }, [language]);
+    fetchCourses(language, page, perPage);
+  }, [language, page, perPage]);
 
   const handleAddCourse = () => {
     setEditingCourse(null);
@@ -184,7 +188,6 @@ const OfflineCourses = () => {
         }
       }
 
-
       if (editingCourse) {
         console.log("Updating course with ID:", editingCourse.id);
         const result = await updateCourse(editingCourse.id, formData);
@@ -232,17 +235,22 @@ const OfflineCourses = () => {
             </Text>
           </div>
           <div className="flex items-center gap-3">
-           
             <Button.Group>
               <Button
                 type={language === "en" ? "primary" : "default"}
-                onClick={() => setLanguage("en")}
+                onClick={() => {
+                  setLanguage("en");
+                  setPage(1);
+                }}
               >
                 English
               </Button>
               <Button
                 type={language === "ar" ? "primary" : "default"}
-                onClick={() => setLanguage("ar")}
+                onClick={() => {
+                  setLanguage("ar");
+                  setPage(1);
+                }}
               >
                 عربي
               </Button>
@@ -258,129 +266,143 @@ const OfflineCourses = () => {
           </div>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <Spin size="large" />
-          </div>
-        ) : courses.length === 0 ? (
+        {courses.length === 0 && !loading ? (
           <Empty description="No courses found" />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {courses.map((item) => (
-              <Card
-                key={item.id}
-                className="hover:shadow-md transition-shadow border-gray-200"
-                actions={[
-                  <Button
-                    type="text"
-                    key="users"
-                    className="text-purple-600"
-                    onClick={async () => {
-                      setUsersCourseId(item.id);
-                      setUsersPage(1);
-                      setUsersPerPage(5);
-                      setUsersSelectedRowKeys([]);
-                      setUsersModalOpen(true);
-                      fetchCourseUsers(item.id, 1, 5);
-                    }}
-                    icon={<FiUsers />}
-                  />,
-                  <Button
-                    type="text"
-                    key="videos"
-                    className="text-green-600"
-                    onClick={() =>
-                      navigate(`/dashboard/courses/${item.id}/videos`)
-                    }
-                    icon={<FiVideo />}
-                  />,
-                  <Button
-                    type="text"
-                    icon={<FiEdit2 />}
-                    key="edit"
-                    className="text-blue-600"
-                    onClick={() => handleEditCourse(item)}
-                  />,
-                  <Popconfirm
-                    title="Delete Course"
-                    description="Are you sure you want to delete this course?"
-                    onConfirm={() => handleDelete(item.id)}
-                    okText="Yes"
-                    cancelText="No"
-                    okButtonProps={{ danger: true }}
-                  >
+          <Spin spinning={loading} size="large">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {courses.map((item) => (
+                <Card
+                  key={item.id}
+                  className="hover:shadow-md transition-shadow border-gray-200"
+                  actions={[
                     <Button
                       type="text"
-                      icon={<FiTrash2 />}
-                      key="delete"
-                      danger
-                    />
-                  </Popconfirm>,
-                ]}
-              >
-                <div className="mb-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <BookOutlined className="text-blue-500 text-xl" />
-                    <Title
-                      level={4}
-                      className="!mb-0 text-gray-900 line-clamp-1"
+                      key="users"
+                      className="text-purple-600"
+                      onClick={async () => {
+                        setUsersCourseId(item.id);
+                        setUsersPage(1);
+                        setUsersPerPage(6);
+                        setUsersSelectedRowKeys([]);
+                        setUsersModalOpen(true);
+                        fetchCourseUsers(item.id, 1, 6);
+                      }}
+                      icon={<FiUsers />}
+                    />,
+                    <Button
+                      type="text"
+                      key="videos"
+                      className="text-green-600"
+                      onClick={() =>
+                        navigate(`/dashboard/courses/${item.id}/videos`)
+                      }
+                      icon={<FiVideo />}
+                    />,
+                    <Button
+                      type="text"
+                      icon={<FiEdit2 />}
+                      key="edit"
+                      className="text-blue-600"
+                      onClick={() => handleEditCourse(item)}
+                    />,
+                    <Popconfirm
+                      title="Delete Course"
+                      description="Are you sure you want to delete this course?"
+                      onConfirm={() => handleDelete(item.id)}
+                      okText="Yes"
+                      cancelText="No"
+                      okButtonProps={{ danger: true }}
                     >
-                      {item.title}
-                    </Title>
-                  </div>
-
-                  {item.subTitle && (
-                    <Text className="text-gray-600 text-sm block mb-2">
-                      {item.subTitle}
-                    </Text>
-                  )}
-
-                  <div className="mb-3">
-                    <DescriptionText
-                      description={item.description}
-                      maxLines={2}
-                    />
-                  </div>
-
-                  {item.image && (
-                    <div className="mb-3">
-                      <div className="relative overflow-hidden rounded cursor-pointer transition-all duration-300 hover:scale-110 hover:shadow-lg hover:z-10">
-                        <Image
-                          src={item.image}
-                          alt={`Course image`}
-                          width="100%"
-                          height={200}
-                          className="object-cover rounded transition-transform duration-300 hover:scale-110"
-                          preview={{
-                            mask: false,
-                          }}
-                        />
-                      </div>
+                      <Button
+                        type="text"
+                        icon={<FiTrash2 />}
+                        key="delete"
+                        danger
+                      />
+                    </Popconfirm>,
+                  ]}
+                >
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <BookOutlined className="text-blue-500 text-xl" />
+                      <Title
+                        level={4}
+                        className="!mb-0 text-gray-900 line-clamp-1"
+                      >
+                        {item.title}
+                      </Title>
                     </div>
-                  )}
 
-                  <div className="flex items-center justify-between mt-3">
-                    <div className="flex flex-col gap-1">
-                      {item.price_aed && (
-                        <Text className="text-gray-700 text-sm font-medium">
-                          AED {parseFloat(item.price_aed).toFixed(2)}
-                        </Text>
-                      )}
-                      {item.price_usd && (
-                        <Text className="text-gray-500 text-xs">
-                          USD {parseFloat(item.price_usd).toFixed(2)}
-                        </Text>
-                      )}
-                    </div>
-                    {item.reviews !== null && item.reviews !== undefined && (
-                      <Text className="text-gray-600 text-sm">
-                        {item.reviews} review{item.reviews !== 1 ? "s" : ""}
+                    {item.subTitle && (
+                      <Text className="text-gray-600 text-sm block mb-2">
+                        {item.subTitle}
                       </Text>
                     )}
+
+                    <div className="mb-3">
+                      <DescriptionText
+                        description={item.description}
+                        maxLines={2}
+                      />
+                    </div>
+
+                    {item.image && (
+                      <div className="mb-3">
+                        <div className="relative overflow-hidden rounded cursor-pointer transition-all duration-300 hover:scale-110 hover:shadow-lg hover:z-10">
+                          <Image
+                            src={item.image}
+                            alt={`Course image`}
+                            width="100%"
+                            height={200}
+                            className="object-cover rounded transition-transform duration-300 hover:scale-110"
+                            preview={{
+                              mask: false,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between mt-3">
+                      <div className="flex flex-col gap-1">
+                        {item.price_aed && (
+                          <Text className="text-gray-700 text-sm font-medium">
+                            AED {parseFloat(item.price_aed).toFixed(2)}
+                          </Text>
+                        )}
+                        {item.price_usd && (
+                          <Text className="text-gray-500 text-xs">
+                            USD {parseFloat(item.price_usd).toFixed(2)}
+                          </Text>
+                        )}
+                      </div>
+                      {item.reviews !== null && item.reviews !== undefined && (
+                        <Text className="text-gray-600 text-sm">
+                          {item.reviews} review{item.reviews !== 1 ? "s" : ""}
+                        </Text>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              ))}
+            </div>
+          </Spin>
+        )}
+
+        {!loading && courses.length > 0 && (
+          <div className="flex justify-end mt-6">
+            <Pagination
+              current={pagination.current_page}
+              total={pagination.total}
+              pageSize={pagination.per_page}
+              showSizeChanger
+              showTotal={(total) => `Total ${total} courses`}
+              onChange={(p, ps) => {
+                setPage(p);
+                setPerPage(ps);
+              }}
+            />
           </div>
         )}
       </div>

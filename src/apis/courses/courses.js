@@ -1,6 +1,5 @@
 import axiosInstance from "../../config/axios";
 
-
 export const coursesApi = {
   // Add course
   addCourse: async (formData) => {
@@ -17,10 +16,12 @@ export const coursesApi = {
   },
 
   // Get all courses with language
-  getAllCourses: async (language = "en") => {
+  getAllCourses: async (language = "en", page = 1, per_page = 6) => {
     const response = await axiosInstance.get("/courses", {
       params: {
         lang: language,
+        page,
+        per_page,
       },
     });
     return response.data;
@@ -52,14 +53,12 @@ export const coursesApi = {
 
   // Delete course
   deleteCourse: async (id) => {
-    const response = await axiosInstance.delete(
-      `/admin/courses/delete/${id}`
-    );
+    const response = await axiosInstance.delete(`/admin/courses/delete/${id}`);
     return response.data;
   },
 
   // Get users of a course (with pagination)
-  getCoursesUsers: async ({ page = 1, per_page = 5, course_id }) => {
+  getCoursesUsers: async ({ page = 1, per_page = 6, course_id }) => {
     const response = await axiosInstance.get("/admin/users", {
       params: { page, per_page, course_id },
     });

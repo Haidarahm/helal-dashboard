@@ -7,25 +7,39 @@ const useCoursesStore = create((set) => ({
   error: null,
   courses: [],
   language: "en",
+  pagination: {
+    current_page: 1,
+    last_page: 1,
+    per_page: 6,
+    total: 0,
+  },
   courseUsers: [],
   courseUsersPagination: {
     current_page: 1,
     last_page: 1,
-    per_page: 10,
+    per_page: 6,
     total: 0,
   },
   courseUsersLoading: false,
 
   // Get all courses
-  fetchCourses: async (language = "en") => {
+  fetchCourses: async (language = "en", page = 1, per_page = 6) => {
     set({ loading: true, error: null, language });
     try {
-      const response = await coursesApi.getAllCourses(language);
+      const response = await coursesApi.getAllCourses(language, page, per_page);
 
       if (response.status === true) {
+        const courses = response.data || [];
+        const pagination = response.pagination || {
+          current_page: page,
+          last_page: page,
+          per_page,
+          total: Array.isArray(courses) ? courses.length : 0,
+        };
         set({
           loading: false,
-          courses: response.data || [],
+          courses,
+          pagination,
           error: null,
         });
         return { success: true, data: response };
@@ -56,7 +70,11 @@ const useCoursesStore = create((set) => ({
         toast.success("Course added successfully");
         // Refresh courses list
         const state = useCoursesStore.getState();
-        await state.fetchCourses(state.language);
+        await state.fetchCourses(
+          state.language,
+          state.pagination.current_page,
+          state.pagination.per_page
+        );
         set({ loading: false });
         return { success: true, data: response };
       } else {
@@ -87,7 +105,11 @@ const useCoursesStore = create((set) => ({
         toast.success("Course updated successfully");
         // Refresh courses list
         const state = useCoursesStore.getState();
-        await state.fetchCourses(state.language);
+        await state.fetchCourses(
+          state.language,
+          state.pagination.current_page,
+          state.pagination.per_page
+        );
         set({ loading: false });
         return { success: true, data: response };
       } else {
@@ -117,7 +139,11 @@ const useCoursesStore = create((set) => ({
       toast.success("Course deleted successfully");
       // Refresh courses list
       const state = useCoursesStore.getState();
-      await state.fetchCourses(state.language);
+      await state.fetchCourses(
+        state.language,
+        state.pagination.current_page,
+        state.pagination.per_page
+      );
       set({ loading: false });
       return { success: true, data: response };
     } catch (error) {
@@ -133,7 +159,7 @@ const useCoursesStore = create((set) => ({
   },
 
   // Fetch users enrolled in a specific course
-  fetchCourseUsers: async (courseId, page = 1, per_page = 10) => {
+  fetchCourseUsers: async (courseId, page = 1, per_page = 6) => {
     set({ courseUsersLoading: true, error: null });
     try {
       const resp = await coursesApi.getCoursesUsers({
